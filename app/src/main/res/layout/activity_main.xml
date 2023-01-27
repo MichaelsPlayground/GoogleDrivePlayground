@@ -11,107 +11,119 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_gravity="center"
+        android:text="Google Drive Playground"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/btnMainGenerateFiles"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="generate files" />
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btnMainGenerateRandomFiles"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="generate random files" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/etMainFilenameLayout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:hint="filename(s):"
-        android:visibility="visible"
-        app:boxCornerRadiusBottomEnd="5dp"
-        app:boxCornerRadiusBottomStart="5dp"
-        app:boxCornerRadiusTopEnd="5dp"
-        app:boxCornerRadiusTopStart="5dp"
-        app:endIconMode="clear_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etMainFilename"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:focusable="false"
-            android:text=""
-            android:textSize="14sp"
-            android:visibility="visible"
-            tools:ignore="KeyboardInaccessibleWidget" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnMainSignIn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="sign in to Google Drive" />
+            <Button
+                android:id="@+id/btnMainGenerateFiles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="generate files" />
 
-    <Button
-        android:id="@+id/btnMainUploadFile"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="upload internal storage file to Google Drive" />
+            <Button
+                android:id="@+id/btnMainGenerateRandomFiles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="generate random files" />
 
-    <Button
-        android:id="@+id/btnMainBasicUploadFile"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="basic upload internal storage file to Google Drive" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/etMainFilenameLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                android:hint="filename(s):"
+                android:visibility="visible"
+                app:boxCornerRadiusBottomEnd="5dp"
+                app:boxCornerRadiusBottomStart="5dp"
+                app:boxCornerRadiusTopEnd="5dp"
+                app:boxCornerRadiusTopStart="5dp"
+                app:endIconMode="clear_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-    <Button
-        android:id="@+id/btnMainBasicCreateFolder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="basic create a folder in Google Drive" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMainFilename"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:focusable="false"
+                    android:text=""
+                    android:textSize="14sp"
+                    android:visibility="visible"
+                    tools:ignore="KeyboardInaccessibleWidget" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/btnMainQueryFiles"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="query files" />
+            <Button
+                android:id="@+id/btnMainSignIn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="sign in to Google Drive" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+            <Button
+                android:id="@+id/btnMainUploadFile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="upload internal storage file to Google Drive" />
 
-        <Button
-            android:id="@+id/btnMainBasicListFiles"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="basic list files" />
+            <Button
+                android:id="@+id/btnMainBasicUploadFile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="basic upload internal storage file to Google Drive" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            <Button
+                android:id="@+id/btnMainBasicCreateFolder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="basic create a folder in Google Drive" />
 
-        <Button
-            android:id="@+id/btnMainBasicListFolder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="basic list folder" />
+            <Button
+                android:id="@+id/btnMainQueryFiles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="query files" />
 
-    </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
 
+                <Button
+                    android:id="@+id/btnMainBasicListFiles"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="basic list files" />
 
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
 
+                <Button
+                    android:id="@+id/btnMainBasicListFolder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="basic list folder" />
 
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>
