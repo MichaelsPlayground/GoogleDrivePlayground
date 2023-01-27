@@ -14,10 +14,12 @@ import android.widget.Toast;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -44,14 +46,17 @@ public class MainActivity extends AppCompatActivity {
     private final String basicFilename = "txtfile";
     private final String fileExtension = ".txt";
 
+    /*
     Button subGoogleDriveDemo;
     Button subDatabaseTest;
     Button subGDriveRest;
     Button subBaMusic;
-    Button generateFiles, signIn, queryFiles;
+     */
+
+    Button generateFiles, generateRandomFiles, signIn, queryFiles;
     Button uploadFileFromInternalStorage;
     Button basicUploadFromInternalStorage;
-    Button basicListFiles;
+    Button basicListFiles, basicListFolder;
     Button basicCreateFolder;
     com.google.android.material.textfield.TextInputEditText fileName;
 
@@ -68,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         generateFiles = findViewById(R.id.btnMainGenerateFiles);
+        generateRandomFiles = findViewById(R.id.btnMainGenerateRandomFiles);
+
         signIn = findViewById(R.id.btnMainSignIn);
         queryFiles = findViewById(R.id.btnMainQueryFiles);
         fileName = findViewById(R.id.etMainFilename);
@@ -75,12 +82,15 @@ public class MainActivity extends AppCompatActivity {
         uploadFileFromInternalStorage = findViewById(R.id.btnMainUploadFile);
         basicUploadFromInternalStorage = findViewById(R.id.btnMainBasicUploadFile);
         basicListFiles = findViewById(R.id.btnMainBasicListFiles);
+        basicListFolder = findViewById(R.id.btnMainBasicListFolder);
         basicCreateFolder = findViewById(R.id.btnMainBasicCreateFolder);
 
+        /*
         subGoogleDriveDemo = findViewById(R.id.btnMainSubGoogleDriveDemo);
         subDatabaseTest = findViewById(R.id.btnMainSubDbTest);
         subGDriveRest = findViewById(R.id.btnMainSubGDriveRest);
         subBaMusic = findViewById(R.id.btnMainSubBAMusic);
+         */
 
 
         basicCreateFolder.setOnClickListener(new View.OnClickListener() {
@@ -197,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                             FileList result = null;
                             try {
                                 result = googleDriveServiceOwn.files().list()
-                                        //.setQ("mimeType = 'application/vnd.google-apps.folder'") // list only folders
+                                        .setQ("mimeType != 'application/vnd.google-apps.folder'") // list only files
                                         .setSpaces("drive")
                                         //.setFields("nextPageToken, items(id, title)")
                                         .setPageToken(pageToken)
@@ -224,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
                         //return files;
                         Log.i(TAG, "files is containing files or folders: " + files.size());
                         StringBuilder sb = new StringBuilder();
+                        sb.append("Files found in GoogleDrive:\n\n");
                         for (int i = 0; i < files.size(); i++) {
                             String content =
                                     files.get(i).getName() + " " +
@@ -245,7 +256,74 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        basicListFolder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Basic list folder in Google Drive");
+                if (googleDriveServiceOwn == null) {
+                    Log.e(TAG, "please sign in before list folder");
+                    return;
+                }
+                // https://developers.google.com/drive/api/guides/search-files
+                Thread DoBasicListFolder = new Thread(){
+                    public void run(){
+                        Log.i(TAG, "running Thread DoBasicListFolder");
+                        List<File> files = new ArrayList<File>();
+                        String pageToken = null;
+                        do {
+                            FileList result = null;
+                            try {
+                                result = googleDriveServiceOwn.files().list()
+                                        .setQ("mimeType = 'application/vnd.google-apps.folder'") // list only folders
+                                        .setSpaces("drive")
+                                        //.setFields("nextPageToken, items(id, title)")
+                                        .setPageToken(pageToken)
+                                        .execute();
+                            } catch (IOException e) {
+                                //throw new RuntimeException(e);
+                                Log.e(TAG, "ERROR: " + e.getMessage());
+                            }
+                            // todo NPE error handling
+                            /*
+                            for (File file : result.getFiles()) {
+                                System.out.printf("Found file: %s (%s)\n",
+                                        file.getName(), file.getId());
+                            }
 
+                             */
+                            if (result != null) {
+                                files.addAll(result.getFiles());
+                            }
+
+                            pageToken = result != null ? result.getNextPageToken() : null;
+                        } while (pageToken != null);
+                        // files is containing all files
+                        //return files;
+                        Log.i(TAG, "files is containing files or folders: " + files.size());
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("Folders found in GoogleDrive:\n\n");
+                        for (int i = 0; i < files.size(); i++) {
+                            String content =
+                                    files.get(i).getName() + " " +
+                                            files.get(i).getId() + " " +
+                                            files.get(i).getSize() + "\n";
+                            sb.append(content);
+                            sb.append("--------------------\n");
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                fileName.setText(sb.toString());
+                            }
+                        });
+
+                    }
+                };
+                DoBasicListFolder.start();
+            }
+        });
+
+/*
         subBaMusic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -293,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
                 // finish();
             }
         });
-
+*/
         queryFiles.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -340,6 +418,40 @@ public class MainActivity extends AppCompatActivity {
                     FileWriter writer = null;
                     try {
                         String filename = basicFilename + i + fileExtension;
+                        String dataToWrite = basicString + i + "\n" +
+                                "generated on " + new Date();
+                        java.io.File file = new java.io.File(view.getContext().getFilesDir(), filename);
+                        writer = new FileWriter(file);
+                        writer.append(dataToWrite);
+                        writer.flush();
+                        writer.close();
+                        Log.i(TAG, "file generated number: " + i);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Error: " + e.getMessage());
+                        Toast.makeText(MainActivity.this, "ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+                Toast.makeText(MainActivity.this, "generated " + numberOfFiles + " files in internal storage", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        generateRandomFiles.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "generate random files");
+                // this is generating 3 text files in internal storage
+                String basicString = "This is a test file for uploading to Google Drive.\nIt is file number ";
+
+                int numberOfFiles = 3;
+                for (int i = 1; i < numberOfFiles + 1; i++) {
+                    FileWriter writer = null;
+                    try {
+                        SimpleDateFormat df = new SimpleDateFormat("yyMMdd_hhmmss-SSS", Locale.getDefault());
+                        String date = df.format(new Date());
+
+                        String filename = basicFilename + "_" + date + fileExtension;
                         String dataToWrite = basicString + i + "\n" +
                                 "generated on " + new Date();
                         java.io.File file = new java.io.File(view.getContext().getFilesDir(), filename);
