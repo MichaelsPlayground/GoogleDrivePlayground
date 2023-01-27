@@ -88,6 +88,12 @@
                 android:text="basic upload internal storage file to Google Drive" />
 
             <Button
+                android:id="@+id/btnMainBasicDownloadFile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="basic download file from Google Drive to internal storage" />
+
+            <Button
                 android:id="@+id/btnMainBasicCreateFolder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

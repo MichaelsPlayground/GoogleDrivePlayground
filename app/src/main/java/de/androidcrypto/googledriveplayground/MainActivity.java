@@ -12,8 +12,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     Button generateFiles, generateRandomFiles, signIn, queryFiles;
     Button uploadFileFromInternalStorage;
     Button basicUploadFromInternalStorage;
+    Button basicDownloadToInternalStorage;
     Button basicListFiles, basicListFolder;
     Button basicCreateFolder;
     com.google.android.material.textfield.TextInputEditText fileName;
@@ -81,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         uploadFileFromInternalStorage = findViewById(R.id.btnMainUploadFile);
         basicUploadFromInternalStorage = findViewById(R.id.btnMainBasicUploadFile);
+        basicDownloadToInternalStorage = findViewById(R.id.btnMainBasicDownloadFile);
         basicListFiles = findViewById(R.id.btnMainBasicListFiles);
         basicListFolder = findViewById(R.id.btnMainBasicListFolder);
         basicCreateFolder = findViewById(R.id.btnMainBasicCreateFolder);
@@ -189,6 +194,56 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        basicDownloadToInternalStorage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "Basic download to internal storage");
+                if (googleDriveServiceOwn == null) {
+                    Log.e(TAG, "please sign in before downloading a file");
+                    return;
+                }
+                // https://developers.google.com/drive/api/guides/manage-downloads
+                // https://gist.github.com/jesusnoseq/4362854
+                // https://stackoverflow.com/questions/58945797/google-drive-api-not-downloading-files-java-v3
+                // https://stackoverflow.com/questions/41184940/download-folder-with-google-drive-api
+
+                // first we need to list the files in the folder to get the fileId
+                // test11.txt fileId:1rnzjf6Qh7CX8DqOniNpt22rrnxhy-Eys
+                // Der Sturm auf die Batterie - Influencer als Lehrer.mp3 fileId:1EK8gUleGtKq9zm08x4gV6jycsapmnNhe
+
+
+                final String filename = "test11.txt";
+                final String fileId = "1rnzjf6Qh7CX8DqOniNpt22rrnxhy-Eys";
+                Thread DoBasicDownload = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(TAG, "running Thread DoBasicDownloadFile");
+
+                        java.io.File destFile = new java.io.File(view.getContext().getFilesDir(), filename);
+                        OutputStream outputstream = null;
+                        try {
+                            outputstream = new FileOutputStream(destFile);
+                            googleDriveServiceOwn.files().get(fileId)
+                                    .executeMediaAndDownloadTo(outputstream);
+                            outputstream.flush();
+                            outputstream.close();
+                            Log.i(TAG, "file download: " + filename);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(MainActivity.this, "file downloaded " + filename + " to Internal Storage", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } catch (IOException e) {
+                            Log.e(TAG, "ERROR: " + e.getMessage());
+                            //throw new RuntimeException(e);
+                        }
+                    }
+                });
+                DoBasicDownload.start();
+            }
+        });
+
         basicListFiles.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -229,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             pageToken = result != null ? result.getNextPageToken() : null;
+                            System.out.println("*** pageToken: " + pageToken);
                         } while (pageToken != null);
                         // files is containing all files
                         //return files;
