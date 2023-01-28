@@ -100,6 +100,18 @@
                 android:text="basic create a folder in Google Drive" />
 
             <Button
+                android:id="@+id/btnMainBasicUploadFileSubfolder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="basic upload internal storage file to Google Drive subfolder" />
+
+            <Button
+                android:id="@+id/btnMainBasicListFilesInFolder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="list files/folder" />
+
+            <Button
                 android:id="@+id/btnMainQueryFiles"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -114,7 +126,7 @@
                     android:id="@+id/btnMainBasicListFiles"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="basic list files" />
+                    android:text="list files" />
 
                 <Space
                     android:layout_width="wrap_content"
@@ -125,7 +137,7 @@
                     android:id="@+id/btnMainBasicListFolder"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="basic list folder" />
+                    android:text="list folder" />
 
             </LinearLayout>
 
