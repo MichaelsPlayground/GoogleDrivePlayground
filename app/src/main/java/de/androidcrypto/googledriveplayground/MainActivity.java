@@ -1,6 +1,7 @@
 package de.androidcrypto.googledriveplayground;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,6 +27,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     Button basicCreateFolder, basicUploadFromInternalStorageToSubfolder;
     com.google.android.material.textfield.TextInputEditText fileName;
 
+    private View view;
 
     private DriveServiceHelper mDriveServiceHelper;
     private static final int REQUEST_CODE_SIGN_IN = 1;
@@ -62,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        view = findViewById(R.id.viewMainLayout);
 
         generateFiles = findViewById(R.id.btnMainGenerateFiles);
         generateRandomFiles = findViewById(R.id.btnMainGenerateRandomFiles);
@@ -83,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Basic create a folder in Google Drive");
-                if (googleDriveServiceOwn == null) {
+                if (!checkLoginStatus()) {
                     Log.e(TAG, "please sign in before upload a file");
                     return;
                 }
@@ -138,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Basic upload from internal storage to subfolder");
-                if (googleDriveServiceOwn == null) {
+                if (!checkLoginStatus()) {
                     Log.e(TAG, "please sign in before upload a file");
                     return;
                 }
@@ -204,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Basic upload from internal storage");
-                if (googleDriveServiceOwn == null) {
+                if (!checkLoginStatus()) {
                     Log.e(TAG, "please sign in before upload a file");
                     return;
                 }
@@ -308,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Basic list files in folder in Google Drive");
-                if (googleDriveServiceOwn == null) {
+                if (!checkLoginStatus()) {
                     Log.e(TAG, "please sign in before list files");
                     return;
                 }
@@ -333,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Basic list files in Google Drive");
-                if (googleDriveServiceOwn == null) {
+                if (!checkLoginStatus()) {
                     Log.e(TAG, "please sign in before list files");
                     return;
                 }
@@ -420,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "Basic list folder in Google Drive");
-                if (googleDriveServiceOwn == null) {
+                if (!checkLoginStatus()) {
                     Log.e(TAG, "please sign in before list folder");
                     return;
                 }
@@ -864,6 +869,20 @@ public class MainActivity extends AppCompatActivity {
  */
         }
         super.onActivityResult(requestCode, resultCode, resultData);
+    }
+
+    /**
+     * section utils
+     */
+
+    private boolean checkLoginStatus() {
+        if (googleDriveServiceOwn == null) {
+            Log.e(TAG, "please sign in before list folder");
+            Snackbar snackbar = Snackbar.make(view, "Please sign in before run any action", Snackbar.LENGTH_LONG);
+            snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+            snackbar.show();
+            return false;
+        } else return true;
     }
 
 }
