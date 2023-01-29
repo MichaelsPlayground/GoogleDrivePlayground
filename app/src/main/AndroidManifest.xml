@@ -61,7 +61,15 @@
                 android:value="" />
         </activity>
 
-
+        <activity
+            android:name=".BrowseSharedFolder"
+            android:exported="false" />
+        <activity
+            android:name=".ListSharedFolder"
+            android:exported="false" />
+        <activity
+            android:name=".ListSharedFiles"
+            android:exported="false" />
 
     </application>
 

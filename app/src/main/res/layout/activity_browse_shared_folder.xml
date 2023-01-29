@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ListFolder">
+    tools:context=".BrowseSharedFolder">
 
     <Button
-        android:id="@+id/btnListFolderA"
+        android:id="@+id/btnBrowseFolderB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -16,10 +16,10 @@
         android:layout_marginEnd="32dp"
         android:height="48dp"
         android:minHeight="48dp"
-        android:text="list folder in root folder" />
+        android:text="Browse folder in root folder" />
 
     <ListView
-        android:id="@+id/lvFolder"
+        android:id="@+id/lvBrowseFolder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1" />

@@ -14,23 +14,23 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ListFolder extends AppCompatActivity implements Serializable {
+public class BrowseSharedFolder extends AppCompatActivity implements Serializable {
     Button listFolder;
     ListView listViewFolder;
 
     private String[] folderList;
 
-    Intent startMainActivityIntent;
+    Intent startListFileActivityIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_folder);
+        setContentView(R.layout.activity_browse_shared_folder);
 
-        listFolder = findViewById(R.id.btnListFolderA);
-        listViewFolder = findViewById(R.id.lvFolder);
+        listFolder = findViewById(R.id.btnBrowseFolderB);
+        listViewFolder = findViewById(R.id.lvBrowseFolder);
 
-        startMainActivityIntent = new Intent(ListFolder.this, MainActivity.class);
+        startListFileActivityIntent = new Intent(BrowseSharedFolder.this, ListSharedFiles.class);
 
         listFolder.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,9 +53,9 @@ public class ListFolder extends AppCompatActivity implements Serializable {
                         String selectedItem = (String) parent.getItemAtPosition(position);
                         System.out.println("The selected folder is : " + selectedItem);
                         Bundle bundle = new Bundle();
-                        bundle.putString("selectedFolder", selectedItem);
-                        startMainActivityIntent.putExtras(bundle);
-                        startActivity(startMainActivityIntent);
+                        bundle.putString("browsedFolder", selectedItem);
+                        startListFileActivityIntent.putExtras(bundle);
+                        startActivity(startListFileActivityIntent);
                     }
                 });
             }

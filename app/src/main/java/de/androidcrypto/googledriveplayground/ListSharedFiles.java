@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ListFiles extends AppCompatActivity implements Serializable {
+public class ListSharedFiles extends AppCompatActivity implements Serializable {
 
     Button listFiles;
     ListView listViewFiles;
@@ -29,12 +29,12 @@ public class ListFiles extends AppCompatActivity implements Serializable {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_files);
+        setContentView(R.layout.activity_list_shared_files);
 
         listFiles = findViewById(R.id.btnListFilesA);
         listViewFiles = findViewById(R.id.lvFiles);
 
-        startMainActivityIntent = new Intent(ListFiles.this, MainActivity.class);
+        startMainActivityIntent = new Intent(ListSharedFiles.this, MainActivity.class);
 
         listFiles.setVisibility(View.VISIBLE);
         Bundle extras = getIntent().getExtras();
