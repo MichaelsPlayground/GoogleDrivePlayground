@@ -1,9 +1,11 @@
 package de.androidcrypto.googledriveplayground;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -51,14 +54,19 @@ public class MainActivity extends AppCompatActivity {
     Button basicDownloadToInternalStorage;
     Button basicListFiles, basicListFolder, basicListFilesInFolder;
     Button basicCreateFolder, basicUploadFromInternalStorageToSubfolder;
+    Button selectLocalFolder, selectGoogleDriveFolder;
     com.google.android.material.textfield.TextInputEditText fileName;
+
+    String selectedFolderFromIntent, parentFolderFromIntent;
+    StorageUtils storageUtils;
 
     private View view;
 
     private DriveServiceHelper mDriveServiceHelper;
     private static final int REQUEST_CODE_SIGN_IN = 1;
 
-    Drive googleDriveServiceOwn = null;
+    public Drive googleDriveServiceOwn = null;
+    String googleIdToken = "";
 
 
     @Override
@@ -83,6 +91,84 @@ public class MainActivity extends AppCompatActivity {
         basicListFilesInFolder = findViewById(R.id.btnMainBasicListFilesInFolder);
         basicCreateFolder = findViewById(R.id.btnMainBasicCreateFolder);
         basicUploadFromInternalStorageToSubfolder = findViewById(R.id.btnMainBasicUploadFileSubfolder);
+        selectLocalFolder = findViewById(R.id.btnMainSelectLocalFolder);
+        selectGoogleDriveFolder = findViewById(R.id.btnMainSelectGoogleDriveFolder);
+
+        // init the StorageUtils
+        storageUtils = new StorageUtils(getApplicationContext());
+
+        /**
+         * section for incoming intent handling
+         */
+        Bundle extras = getIntent().getExtras();
+        System.out.println("get bundles");
+        if (extras != null) {
+            System.out.println("extras not null");
+            selectedFolderFromIntent = (String) getIntent().getSerializableExtra("browsedFolder");
+            parentFolderFromIntent = (String) getIntent().getSerializableExtra("parentFolder");
+            if (parentFolderFromIntent != null) {
+                Log.i(TAG, "from Intent: parent folder: " + parentFolderFromIntent);
+            }
+            if (selectedFolderFromIntent != null) {
+                Log.i(TAG, "from Intent: selected folder: " + selectedFolderFromIntent);
+                System.out.println("folder not null");
+                //folderFromListFolder = folder;
+                System.out.println("ListFolder: " + selectedFolderFromIntent);
+                String folderSelectionString = "you selected the folder " +
+                        selectedFolderFromIntent +
+                        "\nthat is a subfolder of " +
+                        parentFolderFromIntent;
+                fileName.setText(folderSelectionString);
+
+                // todo do what has todo when folder is selected
+                //listFiles.setVisibility(View.GONE);
+                //listFolder(getBaseContext(), folder);
+                String resultString = "selectedFolder: " + selectedFolderFromIntent + "\n"
+                        + "parentFolder: " + parentFolderFromIntent;
+                Log.i(TAG, "resultString: " + resultString);
+                storeTheLocalSelectedFolder();
+            }
+        }
+
+        /**
+         * The BrowseGoogleDriveFolder class will show all folders in the root of Google Drive.
+         * When selecting a folder the name is passed to ListGoogleDriveFolder where the user
+         * can select this folder or browse to a subfolder (if available).
+         * The selected folder is returned to MainActivity using an Intent Bundle
+         */
+        selectGoogleDriveFolder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "selectGoogleDriveFolder");
+                if (!checkLoginStatus()) {
+                    Log.e(TAG, "please sign in before list folder");
+                    return;
+                }
+                Bundle bundle = new Bundle();
+                bundle.putString("googleIdToken", googleIdToken);
+                Intent intent = new Intent(MainActivity.this, BrowseGoogleDriveFolder.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
+                //finish();
+            }
+        });
+
+
+        /**
+         * The BrowseSharedFolder class will show all folders in the root of the device.
+         * When selecting a folder the name is passed to ListSharedFolder where the user
+         * can select this folder or browse to a subfolder (if available).
+         * The selected folder is returned to MainActivity using an Intent Bundle
+         */
+        selectLocalFolder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "selectLocalFolder");
+                Intent intent = new Intent(MainActivity.this, BrowseSharedFolder.class);
+                startActivity(intent);
+                //finish();
+            }
+        });
 
         basicCreateFolder.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,8 +181,8 @@ public class MainActivity extends AppCompatActivity {
                 // https://developers.google.com/drive/api/guides/folder
                 // before creating a new folder check if the folder is existing !!!
                 // otherwise a second folder with the same name will be created
-                Thread DoBasicCreateFolder = new Thread(){
-                    public void run(){
+                Thread DoBasicCreateFolder = new Thread() {
+                    public void run() {
                         Log.i(TAG, "running Thread DoBasicCreateFolder");
                         // File's metadata.
                         String folderName = "test2";
@@ -138,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-
         basicUploadFromInternalStorageToSubfolder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -148,8 +233,8 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 // https://developers.google.com/drive/api/guides/manage-uploads
-                Thread DoBasicUploadSubfolder = new Thread(){
-                    public void run(){
+                Thread DoBasicUploadSubfolder = new Thread() {
+                    public void run() {
                         Log.i(TAG, "running Thread DoBasicUploadSubfolder");
                         //do something that return "Calling this from your main thread can lead to deadlock"
                         // Upload file photo.jpg on drive.
@@ -214,8 +299,8 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 // https://developers.google.com/drive/api/guides/manage-uploads
-                Thread DoBasicUpload = new Thread(){
-                    public void run(){
+                Thread DoBasicUpload = new Thread() {
+                    public void run() {
                         Log.i(TAG, "running Thread DoBasicUpload");
                         //do something that return "Calling this from your main thread can lead to deadlock"
                         // Upload file photo.jpg on drive.
@@ -321,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
                 //String folderId = "1-c0_0R0tOomtfuHcpi3Y08PHQXRuMG15";
                 String folderId = "root";
 
-                Thread DoBasicListFilesInFolder = new Thread(){
+                Thread DoBasicListFilesInFolder = new Thread() {
                     public void run() {
                         Log.i(TAG, "running Thread DoBasicListFilesInFolder");
 
@@ -344,10 +429,9 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-
                 // https://developers.google.com/drive/api/guides/search-files
-                Thread DoBasicListFiles = new Thread(){
-                    public void run(){
+                Thread DoBasicListFiles = new Thread() {
+                    public void run() {
                         Log.i(TAG, "running Thread DoBasicListFiles");
                         List<File> files = new ArrayList<File>();
                         String pageToken = null;
@@ -401,10 +485,10 @@ public class MainActivity extends AppCompatActivity {
 
                             String content =
                                     "name: " + files.get(i).getName() + " " +
-                                    " parents: " + parentList + " " +
+                                            " parents: " + parentList + " " +
 
-                                    " id: " + files.get(i).getId() + " " +
-                                    " size: " + files.get(i).getSize() + "\n";
+                                            " id: " + files.get(i).getId() + " " +
+                                            " size: " + files.get(i).getSize() + "\n";
                             sb.append(content);
                             sb.append("--------------------\n");
                         }
@@ -430,8 +514,8 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 // https://developers.google.com/drive/api/guides/search-files
-                Thread DoBasicListFolder = new Thread(){
-                    public void run(){
+                Thread DoBasicListFolder = new Thread() {
+                    public void run() {
                         Log.i(TAG, "running Thread DoBasicListFolder");
                         List<File> files = new ArrayList<File>();
                         String pageToken = null;
@@ -499,27 +583,27 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                    mDriveServiceHelper.queryFiles()
-                            .addOnSuccessListener(fileList -> {
-                                System.out.println("received filelist");
-                                System.out.println("list entries: " + fileList.getFiles().size());
-                                StringBuilder builder = new StringBuilder();
-                                for (File file : fileList.getFiles()) {
-                                    //builder.append(file.getName()).append("\n");
-                                    builder.append("fileName: " + file.getName() + " fileId:" + file.getId()).append("\n");
-                                    System.out.println("fileName: " + file.getName()
-                                            + " fileId: " + file.getId()
-                                    + " fileSize: " + file.getSize());
+                mDriveServiceHelper.queryFiles()
+                        .addOnSuccessListener(fileList -> {
+                            System.out.println("received filelist");
+                            System.out.println("list entries: " + fileList.getFiles().size());
+                            StringBuilder builder = new StringBuilder();
+                            for (File file : fileList.getFiles()) {
+                                //builder.append(file.getName()).append("\n");
+                                builder.append("fileName: " + file.getName() + " fileId:" + file.getId()).append("\n");
+                                System.out.println("fileName: " + file.getName()
+                                        + " fileId: " + file.getId()
+                                        + " fileSize: " + file.getSize());
 
-                                }
-                                String fileNames = builder.toString();
-                                System.out.println(fileNames);
-                                fileName.setText(fileNames);
-                                //mDocContentEditText.setText(fileNames);
+                            }
+                            String fileNames = builder.toString();
+                            System.out.println(fileNames);
+                            fileName.setText(fileNames);
+                            //mDocContentEditText.setText(fileNames);
 
-                                //etReadOnlyMode();
-                            })
-                            .addOnFailureListener(exception -> Log.e(TAG, "Unable to query files.", exception));
+                            //etReadOnlyMode();
+                        })
+                        .addOnFailureListener(exception -> Log.e(TAG, "Unable to query files.", exception));
             }
         });
 
@@ -674,13 +758,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     /**
      * This method checks if a folder is existing on GoogleDrive
+     *
      * @param folderName
      * @return true if folder is existing
      */
-    private boolean folderExist (String folderName) {
+    private boolean folderExist(String folderName) {
         Log.i(TAG, "folderExist");
         //final String FOLDER_MIME_TYPE= "application/vnd.google-apps.folder";
         String pageToken = null;
@@ -705,16 +789,17 @@ public class MainActivity extends AppCompatActivity {
                 //throw new RuntimeException(e);
                 Log.e(TAG, "ERROR: " + e.getMessage());
             }
-        } while (pageToken != null) ;
+        } while (pageToken != null);
         return false;
     }
 
     /**
      * This method returns the folderId on GoogleDrive
+     *
      * @param folderName
      * @return tthe folderId, if not existing returns ""
      */
-    private String getFolderId (String folderName) {
+    private String getFolderId(String folderName) {
         Log.i(TAG, "getFolderId");
         String pageToken = null;
         do {
@@ -739,11 +824,11 @@ public class MainActivity extends AppCompatActivity {
                 //throw new RuntimeException(e);
                 Log.e(TAG, "ERROR: " + e.getMessage());
             }
-        } while (pageToken != null) ;
+        } while (pageToken != null);
         return "";
     }
 
-    private boolean folderExistOld (String folderName) {
+    private boolean folderExistOld(String folderName) {
         List<File> files = new ArrayList<File>();
         String pageToken = null;
         do {
@@ -789,6 +874,7 @@ public class MainActivity extends AppCompatActivity {
 
         // DriveScopes.DRIVE shows ALL files
         // DriveScopes.DRIVE_FILE shows only files uploaded by this app
+
         GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestEmail()
@@ -837,6 +923,32 @@ public class MainActivity extends AppCompatActivity {
 
                     googleDriveServiceOwn = googleDriveService; // todo
 
+                    Thread DoGetIdToken = new Thread() {
+                        public void run() {
+                            Log.i(TAG, "running Thread DoGetIdToken");
+                            try {
+                                googleIdToken = credential.getToken();
+                            } catch (IOException | GoogleAuthException e) {
+                                //throw new RuntimeException(e);
+                                Log.e(TAG, "Error on retrieving idToken");
+                            }
+                            Log.i(TAG, "idToken: " + googleIdToken);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    //fileName.setText(sb.toString());
+                                }
+                            });
+
+                        }
+                    };
+                    DoGetIdToken.start();
+
+
+
+
+
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
@@ -870,6 +982,47 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onActivityResult(requestCode, resultCode, resultData);
     }
+
+    /**
+     * section for storage a selected folder
+     */
+
+    private void storeTheLocalSelectedFolder() {
+        // https://stackoverflow.com/a/2478662/8166854
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        Log.i(TAG, "the selectedFolder and parentFolder were stored in SharedPreferences");
+                        //Yes button clicked
+                        storageUtils.setLocalStorageName(selectedFolderFromIntent);
+                        storageUtils.setLocalStoragePath(parentFolderFromIntent);
+                        Toast.makeText(MainActivity.this, "selected folder stored", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        Log.i(TAG, "the storage of selectedFolder and parentFolder was denied");
+                        Toast.makeText(MainActivity.this, "selected folder NOT stored", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
+        final String selectedFolderString = "You have selected the folder " +
+                selectedFolderFromIntent + " in " +
+                parentFolderFromIntent + " as local folder.\n" +
+                "Do you want to store the folder ?";
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(selectedFolderString).setPositiveButton(android.R.string.yes, dialogClickListener)
+                .setNegativeButton(android.R.string.no, dialogClickListener).show();
+        /*
+        If you want to use the "yes" "no" literals of the user's language you can use this
+        .setPositiveButton(android.R.string.yes, dialogClickListener)
+        .setNegativeButton(android.R.string.no, dialogClickListener)
+         */
+    }
+
 
     /**
      * section utils

@@ -1,8 +1,6 @@
 package de.androidcrypto.googledriveplayground;
 
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,13 +12,15 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ListSharedFolder extends AppCompatActivity implements Serializable {
+public class ListGoogleDriveFolder extends AppCompatActivity implements Serializable {
 
-    private final String TAG = "ListSharedFolder";
+    private final String TAG = "ListGoogleDriveFolder";
 
     Button selectFolder;
     // style="?attr/materialButtonOutlinedStyle"
@@ -37,11 +37,11 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_shared_folder);
+        setContentView(R.layout.activity_list_google_drive_folder);
 
         //listFolder = findViewById(R.id.btnListFolderA);
-        listViewFolder = findViewById(R.id.lvFolder);
-        selectFolder = findViewById(R.id.btnListFolderSelect);
+        listViewFolder = findViewById(R.id.lvGoogleDriveFolder);
+        selectFolder = findViewById(R.id.btnListGoogleDriveFolderSelect);
 
         Bundle extras = getIntent().getExtras();
         System.out.println("get bundles");
@@ -80,7 +80,7 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
                 Bundle bundle = new Bundle();
                 bundle.putString("browsedFolder", selectedFolderForIntent);
                 bundle.putString("parentFolder", parentFolderForIntent);
-                startMainActivityIntent = new Intent(ListSharedFolder.this, MainActivity.class);
+                startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, MainActivity.class);
                 startMainActivityIntent.putExtras(bundle);
                 // jumps back
                 startActivity(startMainActivityIntent);
@@ -118,7 +118,7 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
                 bundle.putString("selectedFolder", selectedItem);
                 bundle.putString("parentFolder", parentFolderForIntent +  "/" + startDirectory);
                 // we are starting a new ListFolder activity
-                startListFolderActivityIntent = new Intent(ListSharedFolder.this, ListSharedFolder.class);
+                startListFolderActivityIntent = new Intent(ListGoogleDriveFolder.this, ListGoogleDriveFolder.class);
                 startListFolderActivityIntent.putExtras(bundle);
                 startActivity(startListFolderActivityIntent);
                 finish();

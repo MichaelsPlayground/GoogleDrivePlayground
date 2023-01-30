@@ -35,7 +35,9 @@ public class StorageUtils {
     // used for credentials
     private final String UNENCRYPTED_PREFERENCES_FILENAME = "shared_prefs";
     private final String LOCAL_STORAGE_PATH = "local_path";
+    private final String LOCAL_STORAGE_NAME = "local_name";
     private final String GOOGLE_DRIVE_STORAGE_PATH = "google_drive_path";
+    private final String GOOGLE_DRIVE_STORAGE_NAME = "google_drive_name";
 
 
     /*
@@ -79,7 +81,7 @@ public class StorageUtils {
     }
 
     /**
-     * local path storage
+     * local storage path & name
      */
 
     public boolean isLocalStoragePathAvailable() {
@@ -111,8 +113,37 @@ public class StorageUtils {
         return sharedPreferences.getString(LOCAL_STORAGE_PATH, "");
     }
 
+    public boolean isLocalStorageNameAvailable() {
+        if (TextUtils.isEmpty(getLocalStorageName())) {
+            Log.d(TAG, "local storage name is not available");
+            return false;
+        } else {
+            Log.d(TAG, "local storage name is available");
+            return true;
+        }
+    }
+
+    public boolean setLocalStorageName(String name) {
+        if (TextUtils.isEmpty(name)) {
+            Log.e(TAG, "local storage name is empty, storage aborted");
+            return false;
+        }
+        try {
+            sharedPreferences.edit().putString(LOCAL_STORAGE_NAME, name).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error on name storage: " + e.getMessage());
+            return false;
+        }
+        Log.d(TAG, "local storage name successful stored");
+        return true;
+    }
+
+    public String getLocalStorageName() {
+        return sharedPreferences.getString(LOCAL_STORAGE_NAME, "");
+    }
+
     /**
-     * Google Drive path storage
+     * Google Drive storage path & name
      */
 
     public boolean isGoogleDriveStoragePathAvailable() {
@@ -142,6 +173,35 @@ public class StorageUtils {
 
     public String getGoogleDriveStoragePath() {
         return sharedPreferences.getString(GOOGLE_DRIVE_STORAGE_PATH, "");
+    }
+
+    public boolean isGoogleDriveStorageNameAvailable() {
+        if (TextUtils.isEmpty(getGoogleDriveStorageName())) {
+            Log.d(TAG, "Google Drive storage name is not available");
+            return false;
+        } else {
+            Log.d(TAG, "Google Drive storage name is available");
+            return true;
+        }
+    }
+
+    public boolean setGoogleDriveStorageName(String name) {
+        if (TextUtils.isEmpty(name)) {
+            Log.e(TAG, "Google Drive storage name is empty, storage aborted");
+            return false;
+        }
+        try {
+            sharedPreferences.edit().putString(GOOGLE_DRIVE_STORAGE_NAME, name).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error on name storage: " + e.getMessage());
+            return false;
+        }
+        Log.d(TAG, "Google Drive storage name successful stored");
+        return true;
+    }
+
+    public String getGoogleDriveStorageName() {
+        return sharedPreferences.getString(GOOGLE_DRIVE_STORAGE_NAME, "");
     }
 
     /**

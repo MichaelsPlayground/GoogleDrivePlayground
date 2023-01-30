@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ListSharedFolder">
+    tools:context=".ListGoogleDriveFolder">
 
     <Button
-        android:id="@+id/btnListFolderSelect"
+        android:id="@+id/btnListGoogleDriveFolderSelect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/Widget.MaterialComponents.Button"
@@ -19,7 +19,7 @@
         android:text="select folder" />
 
     <ListView
-        android:id="@+id/lvFolder"
+        android:id="@+id/lvGoogleDriveFolder"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1" />
