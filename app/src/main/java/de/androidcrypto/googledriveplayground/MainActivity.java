@@ -7,6 +7,9 @@ import androidx.core.content.ContextCompat;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -699,6 +702,26 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "sign in to Google Drive");
                 // Authenticate the user. For most apps, this should be done when the user performs an
                 // action that requires Drive access rather than in onCreate.
+
+                // first check an internet connection
+                int conStat = getNetworkStatus();
+                if (conStat == 0) {
+                    Snackbar snackbar = Snackbar.make(view, "Activate an internet connection before run any action on Google Drive", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (conStat == 1) {
+                    Snackbar snackbar = Snackbar.make(view, "WIFI internet connection detected", Snackbar.LENGTH_SHORT);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
+                    snackbar.show();
+                }
+                if (conStat > 1) {
+                    Snackbar snackbar = Snackbar.make(view, "Your internet connection could be metered - think about before beginning any data transfer", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.orange));
+                    snackbar.show();
+                }
+
                 requestSignIn();
             }
         });
@@ -1092,6 +1115,60 @@ public class MainActivity extends AppCompatActivity {
             snackbar.show();
             return false;
         } else return true;
+    }
+
+    /**
+     * getNetworkStatus checks for the connection state
+     * @return values
+     * 0 = no active connection
+     * 1 = Wifi connection
+     * 2 = Cellular connection
+     * 9 = none of them
+     */
+    private int getNetworkStatus() {
+        ConnectivityManager connectivityManager = getSystemService(ConnectivityManager.class);
+        Network currentNetwork = connectivityManager.getActiveNetwork();
+        NetworkCapabilities caps = connectivityManager.getNetworkCapabilities(currentNetwork);
+        if (caps == null) {
+            Log.i(TAG, "getNetworkStatus: 0 no internet connection");
+            return 0;
+        }
+        boolean hasWifiConnection = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
+        boolean hasCellularConnection = caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR);
+        boolean hasActiveConnection = isOnline();
+        if (!hasActiveConnection) {
+            Log.i(TAG, "getNetworkStatus: 0 no internet connection");
+            return 0;
+        }
+        if (hasCellularConnection) {
+            Log.i(TAG, "getNetworkStatus: 2 cellular internet connection");
+            return 2;
+        }
+        if (hasWifiConnection) {
+            Log.i(TAG, "getNetworkStatus: 1 wifi internet connection");
+            return 1;
+        }
+        Log.i(TAG, "getNetworkStatus: 9 not identified internet connection");
+        return 9;
+    }
+
+    /**
+     * This method checks if we can ping to google.com - if yes we do have an active internet connection
+     * returns true if there is an active internet connection
+     * returns false if there is no active internet connection
+     * https://stackoverflow.com/a/45777087/8166854 by sami rahimi
+     */
+    public Boolean isOnline() {
+        try {
+            Process p1 = java.lang.Runtime.getRuntime().exec("ping -c 1 www.google.com");
+            int returnVal = p1.waitFor();
+            boolean reachable = (returnVal==0);
+            return reachable;
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }
