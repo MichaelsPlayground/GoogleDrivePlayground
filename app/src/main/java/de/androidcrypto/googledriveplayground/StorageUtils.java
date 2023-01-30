@@ -36,7 +36,7 @@ public class StorageUtils {
     private final String UNENCRYPTED_PREFERENCES_FILENAME = "shared_prefs";
     private final String LOCAL_STORAGE_PATH = "local_path";
     private final String LOCAL_STORAGE_NAME = "local_name";
-    private final String GOOGLE_DRIVE_STORAGE_PATH = "google_drive_path";
+    private final String GOOGLE_DRIVE_STORAGE_ID = "google_drive_id";
     private final String GOOGLE_DRIVE_STORAGE_NAME = "google_drive_name";
 
 
@@ -147,32 +147,32 @@ public class StorageUtils {
      */
 
     public boolean isGoogleDriveStoragePathAvailable() {
-        if (TextUtils.isEmpty(getGoogleDriveStoragePath())) {
-            Log.d(TAG, "Google Drive storage path is not available");
+        if (TextUtils.isEmpty(getGoogleDriveStorageId())) {
+            Log.d(TAG, "Google Drive storage id is not available");
             return false;
         } else {
-            Log.d(TAG, "Google Drive storage path is available");
+            Log.d(TAG, "Google Drive storage id is available");
             return true;
         }
     }
 
-    public boolean setGoogleDriveStoragePath(String path) {
-        if (TextUtils.isEmpty(path)) {
-            Log.e(TAG, "Google Drive storage path is empty, storage aborted");
+    public boolean setGoogleDriveStorageId(String id) {
+        if (TextUtils.isEmpty(id)) {
+            Log.e(TAG, "Google Drive storage id is empty, storage aborted");
             return false;
         }
         try {
-            sharedPreferences.edit().putString(GOOGLE_DRIVE_STORAGE_PATH, path).apply();
+            sharedPreferences.edit().putString(GOOGLE_DRIVE_STORAGE_ID, id).apply();
         } catch (Exception e) {
-            Log.e(TAG, "Error on path storage: " + e.getMessage());
+            Log.e(TAG, "Error on id storage: " + e.getMessage());
             return false;
         }
-        Log.d(TAG, "Google Drive storage path successful stored");
+        Log.d(TAG, "Google Drive storage id successful stored");
         return true;
     }
 
-    public String getGoogleDriveStoragePath() {
-        return sharedPreferences.getString(GOOGLE_DRIVE_STORAGE_PATH, "");
+    public String getGoogleDriveStorageId() {
+        return sharedPreferences.getString(GOOGLE_DRIVE_STORAGE_ID, "");
     }
 
     public boolean isGoogleDriveStorageNameAvailable() {

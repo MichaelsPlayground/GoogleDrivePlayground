@@ -40,16 +40,14 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
 
     private final String TAG ="BrowseGoogleDriveFolder";
 
-    Button listFolder;
-    ListView listViewFolder;
+    private ListView listViewFolder;
 
-    Intent startListFileActivityIntent;
+    private Intent startListFolderActivityIntent;
 
 
     private static final int REQUEST_CODE_SIGN_IN = 1;
 
-    public Drive googleDriveServiceOwn = null;
-    private DriveServiceHelper mDriveServiceHelper;
+    private Drive googleDriveServiceOwn = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,10 +58,7 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
 
         requestSignIn();
 
-        //listFolder();
-
      }
-
 
     /**
      * section sign-in to Google Drive account
@@ -84,13 +79,7 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                         //.requestIdToken(clientId)
                         .requestScopes(new Scope(DriveScopes.DRIVE))
                         .build();
-/*
-        GoogleSignInOptions signInOptions =
-                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestEmail()
-                        .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
-                        .build();
-*/
+
         GoogleSignInClient client = GoogleSignIn.getClient(this, signInOptions);
 
         // The result of the sign-in Intent is handled in onActivityResult.
@@ -121,14 +110,9 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                                     .setApplicationName("GoogleDrivePlayground")
                                     .build();
 
-                    // The DriveServiceHelper encapsulates all REST API and SAF functionality.
-                    // Its instantiation is required before handling any onClick actions.
-                    mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
-
                     googleDriveServiceOwn = googleDriveService; // todo
 
                     listFolder();
-
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
@@ -213,14 +197,15 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                         listViewFolder.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                String selectedItem = (String) parent.getItemAtPosition(position);
-                                System.out.println("The selected folder is : " + selectedItem);
+                                String selectedItemName = (String) parent.getItemAtPosition(position);
+                                String selectedItemId = (String) folderIds.get(position);
+                                System.out.println("The selected folder is : " + selectedItemName + " id: " + selectedItemId);
                                 Bundle bundle = new Bundle();
-                                bundle.putString("selectedFolder", selectedItem);
-                                bundle.putString("parentFolder", "root");
-                                startListFileActivityIntent = new Intent(BrowseGoogleDriveFolder.this, ListGoogleDriveFolder.class);
-                                startListFileActivityIntent.putExtras(bundle);
-                                startActivity(startListFileActivityIntent);
+                                bundle.putString("googleDriveFolderId", selectedItemId);
+                                bundle.putString("googleDriveFolderName", selectedItemName);
+                                startListFolderActivityIntent = new Intent(BrowseGoogleDriveFolder.this, ListGoogleDriveFolder.class);
+                                startListFolderActivityIntent.putExtras(bundle);
+                                startActivity(startListFolderActivityIntent);
                             }
                         });
                     }
@@ -229,7 +214,5 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
             }
         };
         DoBasicListFolder.start();
-
-
     }
 }

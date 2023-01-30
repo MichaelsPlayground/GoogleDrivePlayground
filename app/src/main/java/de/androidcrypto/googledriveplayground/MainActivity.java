@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     com.google.android.material.textfield.TextInputEditText fileName;
 
     String selectedFolderFromIntent, parentFolderFromIntent;
+    String googleDriveFolderIdFromIntent, googleDriveFolderNameFromIntent;
     StorageUtils storageUtils;
 
     private View view;
@@ -104,30 +105,50 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("get bundles");
         if (extras != null) {
             System.out.println("extras not null");
-            selectedFolderFromIntent = (String) getIntent().getSerializableExtra("browsedFolder");
-            parentFolderFromIntent = (String) getIntent().getSerializableExtra("parentFolder");
-            if (parentFolderFromIntent != null) {
-                Log.i(TAG, "from Intent: parent folder: " + parentFolderFromIntent);
-            }
-            if (selectedFolderFromIntent != null) {
-                Log.i(TAG, "from Intent: selected folder: " + selectedFolderFromIntent);
-                System.out.println("folder not null");
-                //folderFromListFolder = folder;
-                System.out.println("ListFolder: " + selectedFolderFromIntent);
+
+            // check first for IntentType
+            String intentType = (String) getIntent().getSerializableExtra("IntentType");
+            if (intentType.equals("selectSharedFolder")) {
+                Log.i(TAG, "receive intent data for selectSharedFolder");
+                selectedFolderFromIntent = (String) getIntent().getSerializableExtra("browsedFolder");
+                parentFolderFromIntent = (String) getIntent().getSerializableExtra("parentFolder");
+                if (parentFolderFromIntent == null) {
+                    Log.i(TAG, "from Intent: parent folder is empty");
+                }
+                if (selectedFolderFromIntent == null) {
+                    Log.i(TAG, "from Intent: selected folder is empty");
+                }
                 String folderSelectionString = "you selected the folder " +
                         selectedFolderFromIntent +
                         "\nthat is a subfolder of " +
                         parentFolderFromIntent;
                 fileName.setText(folderSelectionString);
-
-                // todo do what has todo when folder is selected
-                //listFiles.setVisibility(View.GONE);
-                //listFolder(getBaseContext(), folder);
                 String resultString = "selectedFolder: " + selectedFolderFromIntent + "\n"
                         + "parentFolder: " + parentFolderFromIntent;
                 Log.i(TAG, "resultString: " + resultString);
                 storeTheLocalSelectedFolder();
             }
+            if (intentType.equals("selectGoogleDriveFolder")) {
+                Log.i(TAG, "receive intent data for selectGoogleDriveFolder");
+                googleDriveFolderIdFromIntent = (String) getIntent().getSerializableExtra("googleDriveFolderId");
+                googleDriveFolderNameFromIntent = (String) getIntent().getSerializableExtra("googleDriveFolderName");
+                String folderSelectionString = "you selected the folder " +
+                        googleDriveFolderNameFromIntent +
+                        "\nwith the ID " +
+                        googleDriveFolderIdFromIntent;
+                fileName.setText(folderSelectionString);
+                String resultString = "selectedFolder: " + googleDriveFolderNameFromIntent + "\n"
+                        + "folderId: " + googleDriveFolderIdFromIntent;
+                Log.i(TAG, "resultString: " + resultString);
+                storeTheGoogleDriveSelectedFolder();
+            }
+            //bundle.putString("IntentType", "selectGoogleDriveFolder");
+            //bundle.putString("IntentType", "selectSharedFolder");
+            //bundle.putString("googleDriveFolderId", googleDriveFolderId);
+            //bundle.putString("googleDriveFolderName", googleDriveFolderName);
+
+
+
         }
 
         /**
@@ -1023,6 +1044,41 @@ public class MainActivity extends AppCompatActivity {
          */
     }
 
+    private void storeTheGoogleDriveSelectedFolder() {
+        // https://stackoverflow.com/a/2478662/8166854
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        Log.i(TAG, "the googleDriveFolderName and googleDriveFolderId were stored in SharedPreferences");
+                        //Yes button clicked
+                        storageUtils.setGoogleDriveStorageName(googleDriveFolderNameFromIntent);
+                        storageUtils.setGoogleDriveStorageId(googleDriveFolderIdFromIntent);
+                        Toast.makeText(MainActivity.this, "selected folder stored", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        Log.i(TAG, "the storage of googleDriveFolderName and id was denied");
+                        Toast.makeText(MainActivity.this, "selected folder NOT stored", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
+        final String selectedFolderString = "You have selected the folderName " +
+                googleDriveFolderNameFromIntent + " with ID " +
+                googleDriveFolderIdFromIntent + " as Google Drive folder.\n" +
+                "Do you want to store the folder ?";
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(selectedFolderString).setPositiveButton(android.R.string.yes, dialogClickListener)
+                .setNegativeButton(android.R.string.no, dialogClickListener).show();
+        /*
+        If you want to use the "yes" "no" literals of the user's language you can use this
+        .setPositiveButton(android.R.string.yes, dialogClickListener)
+        .setNegativeButton(android.R.string.no, dialogClickListener)
+         */
+    }
 
     /**
      * section utils
