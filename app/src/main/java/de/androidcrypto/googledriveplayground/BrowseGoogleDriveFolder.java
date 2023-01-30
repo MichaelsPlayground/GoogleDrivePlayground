@@ -27,9 +27,9 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -43,8 +43,6 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
     Button listFolder;
     ListView listViewFolder;
 
-    private String[] folderList;
-
     Intent startListFileActivityIntent;
 
 
@@ -52,7 +50,6 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
 
     public Drive googleDriveServiceOwn = null;
     private DriveServiceHelper mDriveServiceHelper;
-    String googleIdToken = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +58,10 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
 
         listViewFolder = findViewById(R.id.lvBrowseGoogleDriveFolder);
 
-        listFolder();
         requestSignIn();
+
+        //listFolder();
+
      }
 
 
@@ -128,6 +127,8 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
 
                     googleDriveServiceOwn = googleDriveService; // todo
 
+                    listFolder();
+
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
@@ -164,22 +165,17 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                 String pageToken = null;
                 do {
                     FileList result = null;
-                    //try {
-                      /*
-                        result = MainActivity.googleDriveServiceOwn.files().list()
+                    try {
+                        result = googleDriveServiceOwn.files().list()
                                 .setQ("mimeType = 'application/vnd.google-apps.folder'") // list only folders
                                 .setSpaces("drive")
                                 .setFields("nextPageToken, files(id, name, size)")
                                 .setPageToken(pageToken)
                                 .execute();
-                                */
-/*
                     } catch (IOException e) {
                         //throw new RuntimeException(e);
                         Log.e(TAG, "ERROR: " + e.getMessage());
                     }
-
- */
 
                     if (result != null) {
                         files.addAll(result.getFiles());
@@ -190,13 +186,21 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                 // files is containing all files
                 //return files;
                 Log.i(TAG, "files is containing files or folders: " + files.size());
+
+                ArrayList<String> folderNames = new ArrayList<>();
+                ArrayList<String> folderIds = new ArrayList<>();
+
                 StringBuilder sb = new StringBuilder();
                 sb.append("Folders found in GoogleDrive:\n\n");
                 for (int i = 0; i < files.size(); i++) {
+                    File file = files.get(i);
+                    String folderName = file.getName();
+                    String folderId = file.getId();
+                    folderNames.add(folderName);
+                    folderIds.add(folderId);
                     String content =
                             files.get(i).getName() + " " +
-                                    files.get(i).getId() + " " +
-                                    files.get(i).getSize() + "\n";
+                                    files.get(i).getId() + "\n";
                     sb.append(content);
                     sb.append("--------------------\n");
                 }
@@ -204,7 +208,21 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        //fileName.setText(sb.toString());
+                        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, folderNames);
+                        listViewFolder.setAdapter(adapter);
+                        listViewFolder.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                String selectedItem = (String) parent.getItemAtPosition(position);
+                                System.out.println("The selected folder is : " + selectedItem);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("selectedFolder", selectedItem);
+                                bundle.putString("parentFolder", "root");
+                                startListFileActivityIntent = new Intent(BrowseGoogleDriveFolder.this, ListGoogleDriveFolder.class);
+                                startListFileActivityIntent.putExtras(bundle);
+                                startActivity(startListFileActivityIntent);
+                            }
+                        });
                     }
                 });
 
@@ -213,32 +231,5 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
         DoBasicListFolder.start();
 
 
-
-        //Environment.getExternalStoragePublicDirectory("");
-        File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory(""), "");
-        File[] files = externalStorageDir.listFiles();
-        ArrayList<String> folderNames = new ArrayList<>();
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
-                folderNames.add(files[i].getName());
-            }
-        }
-        folderList = folderNames.toArray(new String[0]);
-        System.out.println("fileList size: " + folderList.length);
-        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, folderList);
-        listViewFolder.setAdapter(adapter);
-        listViewFolder.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItem = (String) parent.getItemAtPosition(position);
-                System.out.println("The selected folder is : " + selectedItem);
-                Bundle bundle = new Bundle();
-                bundle.putString("selectedFolder", selectedItem);
-                bundle.putString("parentFolder", "root");
-                startListFileActivityIntent = new Intent(BrowseGoogleDriveFolder.this, ListGoogleDriveFolder.class);
-                startListFileActivityIntent.putExtras(bundle);
-                startActivity(startListFileActivityIntent);
-            }
-        });
     }
 }
