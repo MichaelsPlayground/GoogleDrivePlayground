@@ -39,6 +39,12 @@
                 android:layout_height="wrap_content"
                 android:text="generate random files" />
 
+            <Button
+                android:id="@+id/btnMainGrantStoragePermissions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="grant storage permissions" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/etMainFilenameLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -154,7 +160,16 @@
                 android:layout_height="wrap_content"
                 android:text="select Google Drive folder" />
 
+            <Button
+                android:id="@+id/btnMainStartSimpleSyncLocalToGoogleDrive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="sync Local to Google Drive" />
+
         </LinearLayout>
+
+
+
     </ScrollView>
 
 </LinearLayout>

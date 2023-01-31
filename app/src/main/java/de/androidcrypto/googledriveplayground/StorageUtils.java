@@ -146,7 +146,7 @@ public class StorageUtils {
      * Google Drive storage path & name
      */
 
-    public boolean isGoogleDriveStoragePathAvailable() {
+    public boolean isGoogleDriveStorageIdAvailable() {
         if (TextUtils.isEmpty(getGoogleDriveStorageId())) {
             Log.d(TAG, "Google Drive storage id is not available");
             return false;

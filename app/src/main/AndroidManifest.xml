@@ -19,7 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GoogleDrivePlayground"
         tools:targetApi="31">
-
+        <activity
+            android:name=".SimpleSyncLocalToGoogleDriveActivity"
+            android:exported="false" />
         <activity
             android:name=".UploadInternalActivity"
             android:exported="false" />
@@ -32,8 +34,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
         <activity
             android:name=".bamusic.MainActivity"
             android:exported="true">
@@ -43,7 +43,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".bamusic.LoginActivity"
             android:exported="false">
@@ -51,7 +50,6 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-
         <activity
             android:name=".BrowseSharedFolder"
             android:exported="false" />
@@ -67,7 +65,6 @@
         <activity
             android:name=".ListGoogleDriveFolder"
             android:exported="false" />
-
     </application>
 
 </manifest>

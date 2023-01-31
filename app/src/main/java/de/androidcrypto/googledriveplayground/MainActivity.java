@@ -1,7 +1,11 @@
 package de.androidcrypto.googledriveplayground;
 
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.os.Build.VERSION.SDK_INT;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
@@ -10,7 +14,11 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -52,12 +60,14 @@ public class MainActivity extends AppCompatActivity {
     private final String fileExtension = ".txt";
 
     Button generateFiles, generateRandomFiles, signIn, queryFiles;
+    Button grantStoragePermissions;
     Button uploadFileFromInternalStorage;
     Button basicUploadFromInternalStorage;
     Button basicDownloadToInternalStorage;
     Button basicListFiles, basicListFolder, basicListFilesInFolder;
     Button basicCreateFolder, basicUploadFromInternalStorageToSubfolder;
     Button selectLocalFolder, selectGoogleDriveFolder;
+    Button syncLocalToGoogleDrive;
     com.google.android.material.textfield.TextInputEditText fileName;
 
     String selectedFolderFromIntent, parentFolderFromIntent;
@@ -68,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DriveServiceHelper mDriveServiceHelper;
     private static final int REQUEST_CODE_SIGN_IN = 1;
+    private static final int REQUEST_CODE_PERMISSION = 101;
 
     public Drive googleDriveServiceOwn = null;
     String googleIdToken = "";
@@ -82,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         generateFiles = findViewById(R.id.btnMainGenerateFiles);
         generateRandomFiles = findViewById(R.id.btnMainGenerateRandomFiles);
+        grantStoragePermissions = findViewById(R.id.btnMainGrantStoragePermissions);
 
         signIn = findViewById(R.id.btnMainSignIn);
         queryFiles = findViewById(R.id.btnMainQueryFiles);
@@ -97,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         basicUploadFromInternalStorageToSubfolder = findViewById(R.id.btnMainBasicUploadFileSubfolder);
         selectLocalFolder = findViewById(R.id.btnMainSelectLocalFolder);
         selectGoogleDriveFolder = findViewById(R.id.btnMainSelectGoogleDriveFolder);
+        syncLocalToGoogleDrive = findViewById(R.id.btnMainStartSimpleSyncLocalToGoogleDrive);
 
         // init the StorageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -153,6 +166,54 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
+
+        syncLocalToGoogleDrive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "syncLocalToGoogleDriveFolder");
+
+                // check that local and GoogleDrive folders are selected and stored
+                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
+                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
+                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
+                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
+                if (!setGdName) {
+                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setGdId) {
+                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setLocalName) {
+                    Log.i(TAG, "Local folder name is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setLocalPath) {
+                    Log.i(TAG, "Local folder path is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+
+                // todo check internet connection state
+
+                Intent intent = new Intent(MainActivity.this, SimpleSyncLocalToGoogleDriveActivity.class);
+                startActivity(intent);
+                //finish();
+            }
+        });
+
 
         /**
          * The BrowseGoogleDriveFolder class will show all folders in the root of Google Drive.
@@ -433,8 +494,7 @@ public class MainActivity extends AppCompatActivity {
                 Thread DoBasicListFilesInFolder = new Thread() {
                     public void run() {
                         Log.i(TAG, "running Thread DoBasicListFilesInFolder");
-
-                        listFilesInFolder(folderId);
+                        listFilesInGoogleFolder(folderId);
 
                     }
                 };
@@ -725,10 +785,31 @@ public class MainActivity extends AppCompatActivity {
                 requestSignIn();
             }
         });
+
+        grantStoragePermissions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "grant storage permissions");
+                if (SDK_INT >= Build.VERSION_CODES.R) {
+                    if (Environment.isExternalStorageManager()) {
+                        startActivity(new Intent(view.getContext(), MainActivity.class));
+                    } else { //request for the permission
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                    }
+                } else {
+                    //below android 11=======
+                    startActivity(new Intent(view.getContext(), MainActivity.class));
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSION);
+                }
+            }
+        });
     }
 
 
-    private void listFilesInFolder(String folderId) {
+    private void listFilesInGoogleFolder(String folderId) {
         // https://developers.google.com/drive/api/v3/reference/files
         Log.i(TAG, "listFilesInFolder: " + folderId);
         List<File> files = new ArrayList<File>();
@@ -967,6 +1048,7 @@ public class MainActivity extends AppCompatActivity {
 
                     googleDriveServiceOwn = googleDriveService; // todo
 
+                    /*
                     Thread DoGetIdToken = new Thread() {
                         public void run() {
                             Log.i(TAG, "running Thread DoGetIdToken");
@@ -989,10 +1071,7 @@ public class MainActivity extends AppCompatActivity {
                     };
                     DoGetIdToken.start();
 
-
-
-
-
+                     */
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
@@ -1013,16 +1092,6 @@ public class MainActivity extends AppCompatActivity {
                     handleSignInResult(resultData);
                 }
                 break;
-/*
-            case REQUEST_CODE_OPEN_DOCUMENT:
-                if (resultCode == Activity.RESULT_OK && resultData != null) {
-                    Uri uri = resultData.getData();
-                    if (uri != null) {
-                        openFileFromFilePicker(uri);
-                    }
-                }
-                break;
- */
         }
         super.onActivityResult(requestCode, resultCode, resultData);
     }
@@ -1041,7 +1110,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, "the selectedFolder and parentFolder were stored in SharedPreferences");
                         //Yes button clicked
                         storageUtils.setLocalStorageName(selectedFolderFromIntent);
-                        storageUtils.setLocalStoragePath(parentFolderFromIntent);
+                        String completePath = parentFolderFromIntent + "/" + selectedFolderFromIntent;
+                        storageUtils.setLocalStoragePath(completePath);
                         Toast.makeText(MainActivity.this, "selected folder stored", Toast.LENGTH_SHORT).show();
                         break;
 
