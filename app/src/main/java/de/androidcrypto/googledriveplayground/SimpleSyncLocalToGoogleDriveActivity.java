@@ -115,9 +115,8 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "start simple sync");
-                // get the credentials
 
-
+                // todo run the upload process, check that syncFileNames list is not empty :-)
 
 
 
