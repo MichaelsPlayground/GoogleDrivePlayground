@@ -348,7 +348,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
         GoogleSignIn.getSignedInAccountFromIntent(result)
                 .addOnSuccessListener(googleAccount -> {
                     Log.i(TAG, "Signed in as " + googleAccount.getEmail());
-                    Toast.makeText(SimpleSyncLocalToGoogleDriveActivity.this, "Signed in as " + googleAccount.getEmail(), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(SimpleSyncLocalToGoogleDriveActivity.this, "Signed in as " + googleAccount.getEmail(), Toast.LENGTH_SHORT).show();
 
                     // Use the authenticated account to sign in to the Drive service.
                     GoogleAccountCredential credential =
