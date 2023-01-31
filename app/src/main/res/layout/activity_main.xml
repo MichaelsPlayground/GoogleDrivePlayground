@@ -45,6 +45,12 @@
                 android:layout_height="wrap_content"
                 android:text="grant storage permissions" />
 
+            <Button
+                android:id="@+id/btnMainCheckStoragePermissions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="check storage permissions" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/etMainFilenameLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -81,6 +87,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="sign in to Google Drive" />
+
+            <Button
+                android:id="@+id/btnMainSignOut"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="sign out from Google Drive" />
 
             <Button
                 android:id="@+id/btnMainUploadFile"

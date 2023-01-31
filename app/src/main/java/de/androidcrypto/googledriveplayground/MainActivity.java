@@ -59,8 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private final String basicFilename = "txtfile";
     private final String fileExtension = ".txt";
 
-    Button generateFiles, generateRandomFiles, signIn, queryFiles;
-    Button grantStoragePermissions;
+    Button generateFiles, generateRandomFiles, signIn, signOut, queryFiles;
+    Button grantStoragePermissions, checkStoragePermissions;
     Button uploadFileFromInternalStorage;
     Button basicUploadFromInternalStorage;
     Button basicDownloadToInternalStorage;
@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_PERMISSION = 101;
 
     public Drive googleDriveServiceOwn = null;
+    //GoogleSignInClient googleSignInClientForSignOut;
     String googleIdToken = "";
 
 
@@ -94,8 +95,10 @@ public class MainActivity extends AppCompatActivity {
         generateFiles = findViewById(R.id.btnMainGenerateFiles);
         generateRandomFiles = findViewById(R.id.btnMainGenerateRandomFiles);
         grantStoragePermissions = findViewById(R.id.btnMainGrantStoragePermissions);
+        checkStoragePermissions = findViewById(R.id.btnMainCheckStoragePermissions);
 
         signIn = findViewById(R.id.btnMainSignIn);
+        signOut = findViewById(R.id.btnMainSignOut);
         queryFiles = findViewById(R.id.btnMainQueryFiles);
         fileName = findViewById(R.id.etMainFilename);
 
@@ -756,6 +759,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        signOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "sign out from Google Drive");
+                //googleSignInClientForSignOut.signOut();
+                Log.i(TAG, "user was signed out from Google Drive");
+            }
+        });
+
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -790,6 +802,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "grant storage permissions");
+                // R = SDK 30
                 if (SDK_INT >= Build.VERSION_CODES.R) {
                     if (Environment.isExternalStorageManager()) {
                         startActivity(new Intent(view.getContext(), MainActivity.class));
@@ -803,6 +816,26 @@ public class MainActivity extends AppCompatActivity {
                     //below android 11=======
                     startActivity(new Intent(view.getContext(), MainActivity.class));
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSION);
+                }
+            }
+        });
+
+        checkStoragePermissions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "check storage permissions");
+                // R = SDK 30
+                if (SDK_INT >= Build.VERSION_CODES.R) {
+                    if (Environment.isExternalStorageManager()) {
+                        Snackbar snackbar = Snackbar.make(view, "Storage permissions granted", Snackbar.LENGTH_SHORT);
+                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
+                        snackbar.show();
+                    } else {
+                        // storage permission not granted
+                        Snackbar snackbar = Snackbar.make(view, "Please grant storage permissions", Snackbar.LENGTH_LONG);
+                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                        snackbar.show();
+                    }
                 }
             }
         });
@@ -1013,6 +1046,12 @@ public class MainActivity extends AppCompatActivity {
                         .build();
 */
         GoogleSignInClient client = GoogleSignIn.getClient(this, signInOptions);
+        if (client == null) {
+            System.out.println("* client is null");
+        } else {
+            System.out.println("* client is not null: " + client.toString());
+        }
+        //googleSignInClientForSignOut = client;
 
         // The result of the sign-in Intent is handled in onActivityResult.
         // todo handle deprecated startActivityForResult
@@ -1034,6 +1073,7 @@ public class MainActivity extends AppCompatActivity {
                             GoogleAccountCredential.usingOAuth2(
                                     this, Collections.singleton(DriveScopes.DRIVE_FILE));
                     credential.setSelectedAccount(googleAccount.getAccount());
+
                     Drive googleDriveService =
                             new Drive.Builder(
                                     AndroidHttp.newCompatibleTransport(),
@@ -1048,30 +1088,6 @@ public class MainActivity extends AppCompatActivity {
 
                     googleDriveServiceOwn = googleDriveService; // todo
 
-                    /*
-                    Thread DoGetIdToken = new Thread() {
-                        public void run() {
-                            Log.i(TAG, "running Thread DoGetIdToken");
-                            try {
-                                googleIdToken = credential.getToken();
-                            } catch (IOException | GoogleAuthException e) {
-                                //throw new RuntimeException(e);
-                                Log.e(TAG, "Error on retrieving idToken");
-                            }
-                            Log.i(TAG, "idToken: " + googleIdToken);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    //fileName.setText(sb.toString());
-                                }
-                            });
-
-                        }
-                    };
-                    DoGetIdToken.start();
-
-                     */
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
