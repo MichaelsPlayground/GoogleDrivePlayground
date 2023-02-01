@@ -140,7 +140,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                     snackbar.show();
                     return;
                 }
-                uploadFileToGoogleDriveSubfolderNew();
+                uploadFileToGoogleDriveSubfolderNew(view);
                 /* old
                 int numberOfFilesToSync = syncFileNames.size();
                 Log.i(TAG, "there are " + numberOfFilesToSync + " files to sync, starting...");
@@ -155,7 +155,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
         });
     }
 
-    private void uploadFileToGoogleDriveSubfolderNew() {
+    private void uploadFileToGoogleDriveSubfolderNew(View view) {
         Log.i(TAG, "Basic upload from internal storage to subfolder");
 
         final int numberOfFilesToSync = syncFileNames.size();
@@ -251,7 +251,10 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                         }
                     });
                 }
-                // todo give a message and rerun the syncList
+                Snackbar snackbar = Snackbar.make(view, "All files were synced", Snackbar.LENGTH_SHORT);
+                snackbar.setBackgroundTint(ContextCompat.getColor(SimpleSyncLocalToGoogleDriveActivity.this, R.color.green));
+                snackbar.show();
+                listAllFolder();
             }
         };
         DoBasicUploadSubfolder.start();
