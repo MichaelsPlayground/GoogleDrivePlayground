@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -16,7 +17,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -44,6 +47,9 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
 
     RadioButton showSync, showLocal, showGoogle;
     Button startSync;
+    ProgressBar progressBar;
+    TextView tvProgress;
+    private Handler handler = new Handler();
     ListView listFiles;
     // default values
     boolean isSyncChecked = true;
@@ -72,6 +78,8 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
         showGoogle = findViewById(R.id.rbSimpleSyncToGoogleSyncGoogle);
         startSync = findViewById(R.id.btnSimpleSyncToGoogleSync);
         listFiles = findViewById(R.id.lvSimpleSyncToGoogle);
+        progressBar = findViewById(R.id.pbSimpleSyncToGoogleSyncGoogle);
+        tvProgress = findViewById(R.id.tvSimpleSyncToGoogleSyncGoogleProgress);
 
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -122,6 +130,8 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 Log.i(TAG, "start simple sync");
 
                 // todo run the upload process, check that syncFileNames list is not empty :-)
+                uploadFileToGoogleDriveSubfolderNew();
+                /* old
                 int numberOfFilesToSync = syncFileNames.size();
                 Log.i(TAG, "there are " + numberOfFilesToSync + " files to sync, starting...");
                 for (int i = 0; i < numberOfFilesToSync; i++) {
@@ -129,10 +139,110 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                     Log.i(TAG, "fileName to upload: " + filenameToUpload);
                     uploadFileToGoogleDriveSubfolder(filenameToUpload);
                 }
-
+                */
 
             }
         });
+    }
+
+    private void uploadFileToGoogleDriveSubfolderNew() {
+        Log.i(TAG, "Basic upload from internal storage to subfolder");
+
+        final int numberOfFilesToSync = syncFileNames.size();
+        final int MAX = numberOfFilesToSync;
+        progressBar.setMax(MAX);
+        Log.i(TAG, "there are " + numberOfFilesToSync + " files to sync, starting...");
+
+        /*
+        if (!checkLoginStatus()) {
+            Log.e(TAG, "please sign in before upload a file");
+            return;
+        }
+
+         */
+        // https://developers.google.com/drive/api/guides/manage-uploads
+        Thread DoBasicUploadSubfolder = new Thread() {
+            public void run() {
+                Log.i(TAG, "running Thread DoBasicUploadSubfolder");
+                handler.post(new Runnable() {
+                    public void run() {
+                        startSync.setEnabled(false);
+                    }
+                });
+
+                for (int i = 0; i < numberOfFilesToSync; i++) {
+                    final int progress = i + 1;
+                    String filename = syncFileNames.get(i);
+                    Log.i(TAG, "fileName to upload: " + filename);
+
+                    String folderId = googleDriveFolderId;
+                    if (folderId.equals("")) {
+                        Log.e(TAG, "The destination folder does not exist, abort: " + filename);
+                        return;
+                    } else {
+                        Log.i(TAG, "The destination folder is existing, start uploading to folderId: " + folderId);
+                    }
+
+                    com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
+                    //fileMetadata.setName("photo.jpg");
+                    fileMetadata.setName(filename);
+                    fileMetadata.setParents(Collections.singletonList(folderId));
+                    // File's content.
+                    String recursiveFolder = localFolderPath.replaceFirst("root", "");
+                    java.io.File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory("")
+                            , recursiveFolder);
+                    java.io.File filePath = new java.io.File(externalStorageDir, filename);
+                    if (filePath.exists()) {
+                        Log.i(TAG, "filePath " + filename + " is existing");
+                    } else {
+                        Log.e(TAG, "filePath " + filename + " is NOT existing");
+                        return;
+                    }
+
+                    // get media type
+                    Uri uri = Uri.fromFile(filePath);
+                    String mimeType = getMimeType(uri);
+                    System.out.println("* uri: " + uri);
+                    System.out.println("* mimeType: " + mimeType);
+
+                    // todo Specify media type and file-path for file.
+                    //FileContent mediaContent = new FileContent("image/jpeg", filePath);
+                    //FileContent mediaContent = new FileContent("text/plain", filePath);
+                    FileContent mediaContent = new FileContent(mimeType, filePath);
+                    try {
+                        com.google.api.services.drive.model.File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
+                                .setFields("id, parents")
+                                .execute();
+                        System.out.println("File ID: " + file.getId());
+                        Log.i(TAG, "The file was saved with fileId: " + file.getId());
+                        Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
+                        //return file.getId();
+                    } catch (GoogleJsonResponseException e) {
+                        // TODO(developer) - handle error appropriately
+                        System.err.println("Unable to upload file: " + e.getDetails());
+                        //throw e;
+                        Log.e(TAG, "ERROR: " + e.getDetails());
+                    } catch (IOException e) {
+                        //throw new RuntimeException(e);
+                        Log.e(TAG, "IOException: " + e.getMessage());
+                    }
+                    handler.post(new Runnable() {
+                        public void run() {
+                            progressBar.setProgress(progress);
+                            int percent = (progress / MAX)  * 100;
+
+                            tvProgress.setText("Percent: " + percent + " %");
+                            if(progress == MAX)  {
+                                tvProgress.setText("Completed!");
+                                startSync.setEnabled(true);
+                            }
+                        }
+                    });
+                }
+                // todo give a message and rerun the syncList
+            }
+        };
+        DoBasicUploadSubfolder.start();
     }
 
     private void uploadFileToGoogleDriveSubfolder(String filenameToUpload) {
@@ -148,10 +258,6 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
         Thread DoBasicUploadSubfolder = new Thread() {
             public void run() {
                 Log.i(TAG, "running Thread DoBasicUploadSubfolder");
-                //do something that return "Calling this from your main thread can lead to deadlock"
-                // Upload file photo.jpg on drive.
-
-                // todo THIS IS JUST A COPY !!!
 
                 //String filename = "txtfile1.txt";
                 String filename = filenameToUpload;
