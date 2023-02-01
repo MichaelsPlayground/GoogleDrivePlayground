@@ -1,6 +1,7 @@
 package de.androidcrypto.googledriveplayground;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -26,6 +27,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -48,7 +50,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
     RadioButton showSync, showLocal, showGoogle;
     Button startSync;
     ProgressBar progressBar;
-    TextView tvProgress;
+    TextView tvProgress, tvProgressAbsolute;
     private Handler handler = new Handler();
     ListView listFiles;
     // default values
@@ -80,6 +82,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
         listFiles = findViewById(R.id.lvSimpleSyncToGoogle);
         progressBar = findViewById(R.id.pbSimpleSyncToGoogleSyncGoogle);
         tvProgress = findViewById(R.id.tvSimpleSyncToGoogleSyncGoogleProgress);
+        tvProgressAbsolute = findViewById(R.id.tvSimpleSyncToGoogleSyncGoogleProgressAbsolute);
 
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -130,6 +133,13 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 Log.i(TAG, "start simple sync");
 
                 // todo run the upload process, check that syncFileNames list is not empty :-)
+                if (syncFileNames.size() < 1) {
+                    Log.i(TAG, "no files to sync, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "No files to sync", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(SimpleSyncLocalToGoogleDriveActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
                 uploadFileToGoogleDriveSubfolderNew();
                 /* old
                 int numberOfFilesToSync = syncFileNames.size();
@@ -229,11 +239,13 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                     handler.post(new Runnable() {
                         public void run() {
                             progressBar.setProgress(progress);
-                            int percent = (progress / MAX)  * 100;
+                            int percent = (progress * 100) / MAX;
 
                             tvProgress.setText("Percent: " + percent + " %");
+                            tvProgressAbsolute.setText("files uploaded: " + progress + " of total " + MAX + " files");
                             if(progress == MAX)  {
                                 tvProgress.setText("Completed!");
+                                tvProgressAbsolute.setText("Completed upload (" + MAX + ") files!");
                                 startSync.setEnabled(true);
                             }
                         }
