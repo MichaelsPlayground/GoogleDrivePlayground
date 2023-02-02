@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button generateFiles, generateRandomFiles, signIn, signOut, queryFiles;
     Button grantStoragePermissions, checkStoragePermissions;
+    com.google.android.material.button.MaterialButton storagePermissionsGranted, userIsSignedIn;
     Button uploadFileFromInternalStorage;
     Button basicUploadFromInternalStorage;
     Button basicDownloadToInternalStorage;
@@ -96,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         generateRandomFiles = findViewById(R.id.btnMainGenerateRandomFiles);
         grantStoragePermissions = findViewById(R.id.btnMainGrantStoragePermissions);
         checkStoragePermissions = findViewById(R.id.btnMainCheckStoragePermissions);
+
+        storagePermissionsGranted = findViewById(R.id.btnMainStoragePermissionsGranted);
+        userIsSignedIn = findViewById(R.id.btnMainUserIsSignedIn);
 
         signIn = findViewById(R.id.btnMainSignIn);
         signOut = findViewById(R.id.btnMainSignOut);
@@ -830,11 +834,13 @@ public class MainActivity extends AppCompatActivity {
                         Snackbar snackbar = Snackbar.make(view, "Storage permissions granted", Snackbar.LENGTH_SHORT);
                         snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
                         snackbar.show();
+                        storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
                     } else {
                         // storage permission not granted
                         Snackbar snackbar = Snackbar.make(view, "Please grant storage permissions", Snackbar.LENGTH_LONG);
                         snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
                         snackbar.show();
+                        storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.red));
                     }
                 }
             }
