@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private final String basicFilename = "txtfile";
     private final String fileExtension = ".txt";
 
-    Button generateFiles, generateRandomFiles, signIn, signOut, queryFiles;
+    Button generateFiles, generateRandomFiles, signIn, signOut, checkSignStatus, queryFiles;
     Button grantStoragePermissions, checkStoragePermissions;
     com.google.android.material.button.MaterialButton storagePermissionsGranted, userIsSignedIn;
     Button uploadFileFromInternalStorage;
@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
         signIn = findViewById(R.id.btnMainSignIn);
         signOut = findViewById(R.id.btnMainSignOut);
+        checkSignStatus = findViewById(R.id.btnMainCheckSignStatus);
         queryFiles = findViewById(R.id.btnMainQueryFiles);
         fileName = findViewById(R.id.etMainFilename);
 
@@ -799,6 +800,25 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 requestSignIn();
+            }
+        });
+
+        checkSignStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "check sign status");
+                    if (checkLoginStatus()) {
+                        Snackbar snackbar = Snackbar.make(view, "User is signed in to Google Drive", Snackbar.LENGTH_SHORT);
+                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
+                        snackbar.show();
+                        userIsSignedIn.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
+                    } else {
+                        Snackbar snackbar = Snackbar.make(view, "User is NOT signed in to Google Drive", Snackbar.LENGTH_LONG);
+                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                        snackbar.show();
+                        userIsSignedIn.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    }
+
             }
         });
 

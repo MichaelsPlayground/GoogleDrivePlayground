@@ -41,50 +41,58 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="28dp"
+            android:layout_height="38dp"
+            android:background="@drawable/round_rect_shape"
             android:orientation="horizontal">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="28dp"
                 android:layout_gravity="center_vertical"
+                android:layout_marginStart="16dp"
                 android:layout_weight="1"
+                android:gravity="center_vertical"
                 android:text="user is signed in: " />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnMainUserIsSignedIn"
                 style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_vertical"
                 android:layout_marginEnd="16dp"
                 android:clickable="false"
                 app:backgroundTint="@color/red"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="10dp" />
 
         </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="28dp"
+                android:layout_height="38dp"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/round_rect_shape"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="28dp"
                     android:layout_gravity="center_vertical"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
+                    android:gravity="center_vertical"
                     android:text="storage permissions granted: " />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnMainStoragePermissionsGranted"
                     style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginEnd="16dp"
                     android:clickable="false"
                     app:backgroundTint="@color/red"
-                    app:cornerRadius="14dp" />
+                    app:cornerRadius="10dp" />
 
             </LinearLayout>
 
@@ -142,6 +150,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="sign out from Google Drive" />
+
+            <Button
+                android:id="@+id/btnMainCheckSignStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="check sign status from Google Drive" />
 
             <Button
                 android:id="@+id/btnMainUploadFile"
