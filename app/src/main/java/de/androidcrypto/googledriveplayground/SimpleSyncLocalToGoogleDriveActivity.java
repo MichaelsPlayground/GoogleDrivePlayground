@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -212,8 +211,8 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                     // get media type
                     Uri uri = Uri.fromFile(filePath);
                     String mimeType = getMimeType(uri);
-                    System.out.println("* uri: " + uri);
-                    System.out.println("* mimeType: " + mimeType);
+                    //System.out.println("* uri: " + uri);
+                    //System.out.println("* mimeType: " + mimeType);
 
                     // todo Specify media type and file-path for file.
                     //FileContent mediaContent = new FileContent("image/jpeg", filePath);
@@ -223,7 +222,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                         com.google.api.services.drive.model.File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
                                 .setFields("id, parents")
                                 .execute();
-                        System.out.println("File ID: " + file.getId());
+                        //System.out.println("File ID: " + file.getId());
                         Log.i(TAG, "The file was saved with fileId: " + file.getId());
                         Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
                         //return file.getId();
@@ -308,21 +307,18 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 System.out.println("* uri: " + uri);
                 System.out.println("* mimeType: " + mimeType);
 
-                // todo Specify media type and file-path for file.
-                //FileContent mediaContent = new FileContent("image/jpeg", filePath);
-                //FileContent mediaContent = new FileContent("text/plain", filePath);
                 FileContent mediaContent = new FileContent(mimeType, filePath);
                 try {
                     com.google.api.services.drive.model.File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
                             .setFields("id, parents")
                             .execute();
-                    System.out.println("File ID: " + file.getId());
+                    //System.out.println("File ID: " + file.getId());
                     Log.i(TAG, "The file was saved with fileId: " + file.getId());
                     Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
                     //return file.getId();
                 } catch (GoogleJsonResponseException e) {
                     // TODO(developer) - handle error appropriately
-                    System.err.println("Unable to upload file: " + e.getDetails());
+                    //System.err.println("Unable to upload file: " + e.getDetails());
                     //throw e;
                     Log.e(TAG, "ERROR: " + e.getDetails());
                 } catch (IOException e) {
@@ -370,7 +366,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
     private void showFiles(ArrayList<String> fileNames) {
         String[] fileList;
         fileList = fileNames.toArray(new String[0]);
-        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, fileList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, fileList);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -401,7 +397,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                         syncFileNames.add(localFileNames.get(i));
                     }
                 }
-                System.out.println("* syncFileNames new size: " + syncFileNames.size());
+                //System.out.println("* syncFileNames new size: " + syncFileNames.size());
                 // show data depending on radioGroup
                 if (isSyncChecked) {
                     showFiles(syncFileNames);
@@ -430,7 +426,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 String queryString = String.format("mimeType != 'application/vnd.google-apps.folder'  and '%s' in parents", folderId);
                 //                      queryString: "mimeType != 'application/vnd.google-apps.folder'  and '1-c0_0R0tOomtfuHcpi3Y08PHQXRuMG15' in parents"
                 //                             .setQ("mimeType != 'application/vnd.google-apps.folder'  and '1-c0_0R0tOomtfuHcpi3Y08PHQXRuMG15' in parents")
-                System.out.println("* queryString: " + queryString);
+                //System.out.println("* queryString: " + queryString);
                 result = googleDriveServiceOwn.files().list()
                         //.setQ("mimeType != 'application/vnd.google-apps.folder'  and '1-c0_0R0tOomtfuHcpi3Y08PHQXRuMG15' in parents") // list only files
                         .setQ(queryString)
@@ -443,14 +439,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 //throw new RuntimeException(e);
                 Log.e(TAG, "ERROR: " + e.getMessage());
             }
-            // todo NPE error handling
-                            /*
-                            for (File file : result.getFiles()) {
-                                System.out.printf("Found file: %s (%s)\n",
-                                        file.getName(), file.getId());
-                            }
 
-                             */
             if (result != null) {
                 files.addAll(result.getFiles());
             }
@@ -472,7 +461,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
             String parentList = "";
             if (fileParents != null) {
                 int parentListSize = fileParents.size();
-                System.out.println("* there are parents: " + parentListSize);
+                //System.out.println("* there are parents: " + parentListSize);
                 for (int j = 0; j < parentListSize; j++) {
                     parentList += fileParents.get(j) + " ";
                 }
@@ -487,10 +476,10 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
             sb.append(content);
             sb.append("--------------------\n");
         }
-        System.out.println("fileList:\n" + sb.toString());
+        //System.out.println("fileList:\n" + sb.toString());
         String[] fileList;
         fileList = googleFileNames.toArray(new String[0]);
-        ArrayAdapter adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, fileList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, fileList);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -518,8 +507,8 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
         }
         String[] fileList;
         fileList = localFileNames.toArray(new String[0]);
-        System.out.println("fileList size: " + fileList.length);
-        ArrayAdapter adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, fileList);
+        //System.out.println("fileList size: " + fileList.length);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, fileList);
         //listFiles.setAdapter(adapter);
         /*
         listFiles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
