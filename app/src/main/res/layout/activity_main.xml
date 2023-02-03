@@ -247,6 +247,18 @@
                 android:layout_height="wrap_content"
                 android:text="sync Google Drive to local" />
 
+            <Button
+                android:id="@+id/btnMainStartSimpleUploadLocalToGoogleDrive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="upload Local to Google Drive" />
+
+            <Button
+                android:id="@+id/btnMainStartSimpleDownloadGoogleDriveToLocal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="download Google Drive to local" />
+
         </LinearLayout>
 
 

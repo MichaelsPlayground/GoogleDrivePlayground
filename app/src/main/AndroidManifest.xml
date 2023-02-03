@@ -27,6 +27,9 @@
             android:name=".SimpleSyncGoogleDriveToLocalActivity"
             android:exported="false" />
         <activity
+            android:name=".SimpleUploadLocalToGoogleDriveActivity"
+            android:exported="false" />
+        <activity
             android:name=".UploadInternalActivity"
             android:exported="false" />
         <activity
