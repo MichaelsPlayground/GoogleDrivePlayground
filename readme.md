@@ -1,5 +1,8 @@
 # Google Drive playground
 
+This is an experimental app that shows how to work with Google Drive Rest API 3
+
+
 
 build.gradle (app):
 ````plaintext
