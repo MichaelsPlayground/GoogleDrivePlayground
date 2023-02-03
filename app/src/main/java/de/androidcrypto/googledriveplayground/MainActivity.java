@@ -3,14 +3,17 @@ package de.androidcrypto.googledriveplayground;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.os.Build.VERSION.SDK_INT;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private DriveServiceHelper mDriveServiceHelper;
     private static final int REQUEST_CODE_SIGN_IN = 1;
     private static final int REQUEST_CODE_PERMISSION = 101;
+    private static final int REQUEST_CODE_PERMISSION_BELOW_SDK30 = 102;
 
     public Drive googleDriveServiceOwn = null;
     //GoogleSignInClient googleSignInClientForSignOut;
@@ -885,8 +889,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } else {
                     //below android 11=======
-                    startActivity(new Intent(view.getContext(), MainActivity.class));
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSION);
+                    verifyPermissionsBelowSdk30();
+                    //startActivity(new Intent(view.getContext(), MainActivity.class));
+                    //ActivityCompat.requestPermissions(MainActivity.this, new String[]{WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_PERMISSION);
                 }
             }
         });
@@ -914,6 +919,49 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * section permission granting
+     */
+
+    private void verifyPermissionsBelowSdk30() {
+        String[] permissions = {android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                permissions[0]) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                permissions[1]) == PackageManager.PERMISSION_GRANTED) {
+            Snackbar snackbar = Snackbar.make(view, "Storage permissions granted", Snackbar.LENGTH_SHORT);
+            snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
+            snackbar.show();
+            storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
+            Log.i(TAG, "permissions were granted on device below SDK30");
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    permissions,
+                    REQUEST_CODE_PERMISSION_BELOW_SDK30);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSION_BELOW_SDK30) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Snackbar snackbar = Snackbar.make(view, "Storage permissions granted", Snackbar.LENGTH_SHORT);
+                snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
+                snackbar.show();
+                storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
+                Log.i(TAG, "permissions were granted on device below SDK30");
+            } else {
+                Toast.makeText(this, "Grant Storage Permission is Required to use this function.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    /**
+     * section list files in Google Drive and local folders
+     */
 
     private void listFilesInGoogleFolder(String folderId) {
         // https://developers.google.com/drive/api/v3/reference/files

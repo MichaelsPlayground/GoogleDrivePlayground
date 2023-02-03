@@ -37,7 +37,9 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.FileList;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,8 +60,10 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
     boolean isGoogleChecked = false;
 
     ArrayList<String> syncFileNames = new ArrayList<>();
+    ArrayList<String> syncFileIds = new ArrayList<>();
     ArrayList<String> localFileNames = new ArrayList<>();
     ArrayList<String> googleFileNames = new ArrayList<>();
+    ArrayList<String> googleFileIds = new ArrayList<>();
 
     String localFolderName, localFolderPath;
     String googleDriveFolderName, googleDriveFolderId;
@@ -129,7 +133,7 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
         startSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(TAG, "start simple sync");
+                Log.i(TAG, "start simple sync upload from local to Google Drive folder");
 
                 // todo run the upload process, check that syncFileNames list is not empty :-)
                 if (syncFileNames.size() < 1) {
@@ -138,8 +142,10 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
                     snackbar.setBackgroundTint(ContextCompat.getColor(SimpleSyncGoogleDriveToLocalActivity.this, R.color.red));
                     snackbar.show();
                     return;
+                } else {
+                    Log.i(TAG, "number of files to download: " + syncFileNames.size());
                 }
-                uploadFileToGoogleDriveSubfolderNew(view);
+                downloadFileFromGoogleDriveSubfolderToLocal(view);
                 /* old
                 int numberOfFilesToSync = syncFileNames.size();
                 Log.i(TAG, "there are " + numberOfFilesToSync + " files to sync, starting...");
@@ -153,6 +159,98 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private void downloadFileFromGoogleDriveSubfolderToLocal(View view) {
+        Log.i(TAG, "start simple sync download from Google Drive to local folder");
+
+        final int numberOfFilesToSync = syncFileNames.size();
+        final int MAX = numberOfFilesToSync;
+        progressBar.setMax(MAX);
+        Log.i(TAG, "there are " + numberOfFilesToSync + " files to sync, starting...");
+
+        /*
+        if (!checkLoginStatus()) {
+            Log.e(TAG, "please sign in before upload a file");
+            return;
+        }
+
+         */
+
+        // https://developers.google.com/drive/api/guides/manage-uploads
+        Thread DoBasicDownloadSubfolder = new Thread() {
+            public void run() {
+                Log.i(TAG, "running Thread DoBasicDownloadSubfolder");
+                handler.post(new Runnable() {
+                    public void run() {
+                        startSync.setEnabled(false);
+                    }
+                });
+
+                for (int i = 0; i < numberOfFilesToSync; i++) {
+                    final int progress = i + 1;
+                    String fileName = syncFileNames.get(i);
+                    String fileId = syncFileIds.get(i);
+                    Log.i(TAG, "fileName to download: " + fileName + " id: " + fileId);
+
+                    String folderId = googleDriveFolderId;
+                    if (folderId.equals("")) {
+                        Log.e(TAG, "The source folder does not exist, abort: " + folderId);
+                        return;
+                    } else {
+                        Log.i(TAG, "The source folder is existing, start downloading from folderId: " + folderId);
+                    }
+
+                    // get the local path
+
+                    String recursiveFolder = localFolderPath.replaceFirst("root", "");
+                    File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory("")
+                            , recursiveFolder);
+                    File filePath = new File(externalStorageDir, fileName);
+
+                    OutputStream outputstream = null;
+                    try {
+                        outputstream = new FileOutputStream(filePath);
+                        googleDriveServiceOwn.files().get(fileId)
+                                .executeMediaAndDownloadTo(outputstream);
+                        outputstream.flush();
+                        outputstream.close();
+                        Log.i(TAG, "file download: " + fileName);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //Toast.makeText(SimpleSyncGoogleDriveToLocalActivity.this, "file downloaded " + fileName + " to Internal Storage", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch (IOException e) {
+                        Log.e(TAG, "ERROR: " + e.getMessage());
+                        //throw new RuntimeException(e);
+                    }
+                    handler.post(new Runnable() {
+                        public void run() {
+                            progressBar.setProgress(progress);
+                            int percent = (progress * 100) / MAX;
+
+                            tvProgress.setText("Percent: " + percent + " %");
+                            tvProgressAbsolute.setText("files downloaded: " + progress + " of total " + MAX + " files");
+                            if (progress == MAX) {
+                                tvProgress.setText("Completed!");
+                                tvProgressAbsolute.setText("Completed upload (" + MAX + ") files!");
+                                startSync.setEnabled(true);
+                            }
+                        }
+                    });
+                }
+                Snackbar snackbar = Snackbar.make(view, "All files were synced", Snackbar.LENGTH_SHORT);
+                snackbar.setBackgroundTint(ContextCompat.getColor(SimpleSyncGoogleDriveToLocalActivity.this, R.color.green));
+                snackbar.show();
+                listAllFolder();
+            }
+
+        };
+        DoBasicDownloadSubfolder.start();
+    }
+
 
     private void uploadFileToGoogleDriveSubfolderNew(View view) {
         Log.i(TAG, "Basic upload from internal storage to subfolder");
@@ -211,12 +309,7 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
                     // get media type
                     Uri uri = Uri.fromFile(filePath);
                     String mimeType = getMimeType(uri);
-                    //System.out.println("* uri: " + uri);
-                    //System.out.println("* mimeType: " + mimeType);
 
-                    // todo Specify media type and file-path for file.
-                    //FileContent mediaContent = new FileContent("image/jpeg", filePath);
-                    //FileContent mediaContent = new FileContent("text/plain", filePath);
                     FileContent mediaContent = new FileContent(mimeType, filePath);
                     try {
                         com.google.api.services.drive.model.File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
@@ -242,7 +335,7 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
 
                             tvProgress.setText("Percent: " + percent + " %");
                             tvProgressAbsolute.setText("files uploaded: " + progress + " of total " + MAX + " files");
-                            if(progress == MAX)  {
+                            if (progress == MAX) {
                                 tvProgress.setText("Completed!");
                                 tvProgressAbsolute.setText("Completed upload (" + MAX + ") files!");
                                 startSync.setEnabled(true);
@@ -376,7 +469,6 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
 
     }
 
-
     private void listGoogleDriveFiles() {
         Log.i(TAG, "listGoogleDriveFiles");
 
@@ -385,16 +477,19 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
                 Log.i(TAG, "running Thread DoBasicListFilesInFolder");
                 listFilesInGoogleFolder(googleDriveFolderId);
                 syncFileNames = new ArrayList<>();
+                syncFileIds = new ArrayList<>();
                 System.out.println("* syncFileNames old size: " + syncFileNames.size());
                 System.out.println("* localFileNames size: " + localFileNames.size());
                 System.out.println("* GoogleFileNames size: " + googleFileNames.size());
                 // find files from local in GoogleDrive list
-                for (int i = 0; i < localFileNames.size(); i++) {
-                    int index = googleFileNames.indexOf(localFileNames.get(i));
-                    // if index = -1 the localFileName is NOT in the googleDriveFileNames list
+                for (int i = 0; i < googleFileNames.size(); i++) {
+                    //int index = googleFileNames.indexOf(localFileNames.get(i));
+                    int index = localFileNames.indexOf(googleFileNames.get(i));
+                    // if index = -1 if the googleDriveFileNames is NOT in localFileName list
                     if (index < 0) {
                         // add the entry to the syncs list
-                        syncFileNames.add(localFileNames.get(i));
+                        syncFileNames.add(googleFileNames.get(i));
+                        syncFileIds.add(googleFileIds.get(i));
                     }
                 }
                 //System.out.println("* syncFileNames new size: " + syncFileNames.size());
@@ -450,6 +545,7 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
         // files is containing all files
         //return files;
         googleFileNames = new ArrayList<>();
+        googleFileIds = new ArrayList<>();
         Log.i(TAG, "files is containing files or folders: " + files.size());
         StringBuilder sb = new StringBuilder();
         sb.append("Files found in GoogleDrive:\n\n");
@@ -467,6 +563,7 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
                 }
             }
             googleFileNames.add(files.get(i).getName());
+            googleFileIds.add(files.get(i).getId());
             String content =
                     "name: " + files.get(i).getName() + " " +
                             " parents: " + parentList + " " +
