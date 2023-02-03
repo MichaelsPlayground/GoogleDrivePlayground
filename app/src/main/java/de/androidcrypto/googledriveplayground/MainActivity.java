@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     Button basicListFiles, basicListFolder, basicListFilesInFolder;
     Button basicCreateFolder, basicUploadFromInternalStorageToSubfolder;
     Button selectLocalFolder, selectGoogleDriveFolder;
-    Button syncLocalToGoogleDrive;
+    Button syncLocalToGoogleDrive, syncGoogleDriveToLocal;
     com.google.android.material.textfield.TextInputEditText fileName;
 
     String selectedFolderFromIntent, parentFolderFromIntent;
@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
         selectLocalFolder = findViewById(R.id.btnMainSelectLocalFolder);
         selectGoogleDriveFolder = findViewById(R.id.btnMainSelectGoogleDriveFolder);
         syncLocalToGoogleDrive = findViewById(R.id.btnMainStartSimpleSyncLocalToGoogleDrive);
+        syncGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleSyncGoogleDriveToLocal);
 
         // init the StorageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -222,6 +223,52 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        syncGoogleDriveToLocal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "syncGoogleDriveToLocalFolder");
+
+                // check that local and GoogleDrive folders are selected and stored
+                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
+                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
+                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
+                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
+                if (!setGdName) {
+                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setGdId) {
+                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setLocalName) {
+                    Log.i(TAG, "Local folder name is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setLocalPath) {
+                    Log.i(TAG, "Local folder path is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+
+                // todo check internet connection state
+
+                Intent intent = new Intent(MainActivity.this, SimpleSyncGoogleDriveToLocalActivity.class);
+                startActivity(intent);
+                //finish();
+            }
+        });
 
         /**
          * The BrowseGoogleDriveFolder class will show all folders in the root of Google Drive.
