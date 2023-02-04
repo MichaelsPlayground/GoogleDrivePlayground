@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -60,6 +61,7 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
     ArrayList<String> uploadFileNames = new ArrayList<>();
     ArrayList<String> localFileNames = new ArrayList<>();
     ArrayList<String> googleFileNames = new ArrayList<>();
+    ArrayList<String> googleFileIds = new ArrayList<>();
 
     String localFolderName, localFolderPath;
     String googleDriveFolderName, googleDriveFolderId;
@@ -344,6 +346,23 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
         return mimeType;
     }
 
+    /*
+    public Task<Void> deleteFolderFile(final String fileId) {
+        return Tasks.call(mExecutor, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // Retrieve the metadata as a File object.
+                if (fileId != null) {
+                    mDriveService.files().delete(fileId).execute();
+                }
+
+                return null;
+            }
+        });
+    }
+
+     */
+
     /**
      * step 1: listAllFolders gets all files in the local and GoogleDrive folder ist an ArrayList
      * step 2: for each file in localFolderList it checks if a file with this name exists in googleDriveFolderList
@@ -362,14 +381,48 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
     }
 
 
-    private void showFiles(ArrayList<String> fileNames) {
+    private void showFiles(ArrayList<String> fileNames, boolean isLocalFolder) {
         String[] fileList;
         fileList = fileNames.toArray(new String[0]);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, fileList);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                listFiles.setAdapter(adapter);
+                listFiles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        String selectedFileName = (String) parent.getItemAtPosition(position);
+                        System.out.println("The selected fileName is : " + selectedFileName);
+                        // now check if the file is existing on Google Drive to run a delete
+                        for (int i = 0; i < googleFileNames.size(); i++) {
+                            int index = googleFileNames.indexOf(selectedFileName);
+                            // if index = -1 the localFileName is NOT in the googleDriveFileNames list
+                            if (index < 0) {
+                                // add the entry to the syncs list
+                                //syncFileNames.add(localFileNames.get(i));
+                            } else {
+                                String googleFileIdToDelete = googleFileIds.get(i);
+                                System.out.println("* selectedFileName is existing on Google Drive");
+                                System.out.println("* need to delete the file on Google Drive");
+                                System.out.println("* fileId to delete on Google Drive: " + googleFileIdToDelete);
+                            }
+                        }
+
+
+
+                        /*
+                        Bundle bundle = new Bundle();
+                        bundle.putString("selectedFolder", selectedItem);
+                        bundle.putString("parentFolder", parentFolderForIntent +  "/" + startDirectory);
+                        // we are starting a new ListFolder activity
+                        startListFolderActivityIntent = new Intent(ListSharedFolder.this, ListSharedFolder.class);
+                        startListFolderActivityIntent.putExtras(bundle);
+                        startActivity(startListFolderActivityIntent);
+                        finish();
+
+                         */
+                    }
+                });
             }
         });
 
@@ -399,13 +452,13 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
                 //System.out.println("* syncFileNames new size: " + syncFileNames.size());
                 // show data depending on radioGroup
                 if (isSyncChecked) {
-                    showFiles(uploadFileNames);
+                    showFiles(uploadFileNames, false);
                 }
                 if (isLocalChecked) {
-                    showFiles(localFileNames);
+                    showFiles(localFileNames, true);
                 }
                 if (isGoogleChecked) {
-                    showFiles(googleFileNames);
+                    showFiles(googleFileNames, false);
                 }
             }
         };
@@ -449,6 +502,7 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
         // files is containing all files
         //return files;
         googleFileNames = new ArrayList<>();
+        googleFileIds = new ArrayList<>();
         Log.i(TAG, "files is containing files or folders: " + files.size());
         StringBuilder sb = new StringBuilder();
         sb.append("Files found in GoogleDrive:\n\n");
@@ -466,6 +520,7 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
                 }
             }
             googleFileNames.add(files.get(i).getName());
+            googleFileIds.add(files.get(i).getId());
             String content =
                     "name: " + files.get(i).getName() + " " +
                             " parents: " + parentList + " " +

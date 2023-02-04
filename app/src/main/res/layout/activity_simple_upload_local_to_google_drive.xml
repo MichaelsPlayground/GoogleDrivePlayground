@@ -32,14 +32,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:checked="true"
-            android:text="sync" />
+            android:checked="false"
+            android:text="upload" />
 
         <RadioButton
             android:id="@+id/rbSimpleUploadToGoogleSyncLocal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:checked="true"
+            android:clickable="true"
             android:text="local" />
 
         <RadioButton
