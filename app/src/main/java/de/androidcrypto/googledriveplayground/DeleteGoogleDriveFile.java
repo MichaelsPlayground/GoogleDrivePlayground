@@ -195,6 +195,34 @@ public class DeleteGoogleDriveFile extends AppCompatActivity implements Serializ
         super.onActivityResult(requestCode, resultCode, resultData);
     }
 
+    private void deleteGoogleDriveFile(String fileToDeleteId) {
+        Log.i(TAG, "deleteGoogleDriveFile id: " + fileToDeleteId);
+
+        Thread DoDeleteGoogleDriveFile = new Thread() {
+            public void run() {
+                try {
+                    googleDriveServiceOwn.files().delete(fileToDeleteId).execute();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(DeleteGoogleDriveFile.this, "selected file deleted", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    listFiles();
+                } catch (IOException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(DeleteGoogleDriveFile.this, "ERROR: could not delete the selected file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    //throw new RuntimeException(e);
+                }
+            }
+        };
+        DoDeleteGoogleDriveFile.start();
+    }
+
 
     private void listFiles() {
         Log.i(TAG, "list files in subfolder in Google Drive");
@@ -262,7 +290,7 @@ public class DeleteGoogleDriveFile extends AppCompatActivity implements Serializ
                                 Log.i(TAG, "long click listener for position " + position);
 
                                 String deleteFileName = fileNames.get(position);
-                                        String deleteFileId = fileIds.get(position);
+                                String deleteFileId = fileIds.get(position);
                                 // check before deletion
                                 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                                     @Override
@@ -271,17 +299,7 @@ public class DeleteGoogleDriveFile extends AppCompatActivity implements Serializ
                                             case DialogInterface.BUTTON_POSITIVE:
                                                 Log.i(TAG, "the selectedFolder and parentFolder were stored in SharedPreferences");
                                                 //Yes button clicked
-
-                                                // todo run in thread
-
-                                                try {
-                                                    googleDriveServiceOwn.files().delete(deleteFileId).execute();
-                                                    Toast.makeText(DeleteGoogleDriveFile.this, "selected file deleted", Toast.LENGTH_SHORT).show();
-                                                } catch (IOException e) {
-                                                    Toast.makeText(DeleteGoogleDriveFile.this, "ERROR: could not delete the selected file: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                                    //throw new RuntimeException(e);
-                                                }
-
+                                                deleteGoogleDriveFile(deleteFileId);
                                                 break;
                                             case DialogInterface.BUTTON_NEGATIVE:
                                                 //No button clicked
