@@ -259,6 +259,12 @@
                 android:layout_height="wrap_content"
                 android:text="download Google Drive to local" />
 
+            <Button
+                android:id="@+id/btnMainStartDeleteGoogleDriveFile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="delete a Google Drive file" />
+
         </LinearLayout>
 
 

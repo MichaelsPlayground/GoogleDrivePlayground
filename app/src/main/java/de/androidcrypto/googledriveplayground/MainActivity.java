@@ -73,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
     Button selectLocalFolder, selectGoogleDriveFolder;
     Button syncLocalToGoogleDrive, syncGoogleDriveToLocal;
     Button uploadLocalToGoogleDrive, downloadGoogleDriveToLocal;
+
+    Button deleteGoogleDriveFile;
+
     com.google.android.material.textfield.TextInputEditText fileName;
 
     String selectedFolderFromIntent, parentFolderFromIntent;
@@ -126,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
         syncGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleSyncGoogleDriveToLocal);
         uploadFileFromInternalStorage = findViewById(R.id.btnMainStartSimpleUploadLocalToGoogleDrive);
         downloadGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleDownloadGoogleDriveToLocal);
+        deleteGoogleDriveFile = findViewById(R.id.btnMainStartDeleteGoogleDriveFile);
 
         // init the StorageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -1012,6 +1016,41 @@ public class MainActivity extends AppCompatActivity {
                         storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.red));
                     }
                 }
+            }
+        });
+
+        deleteGoogleDriveFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "delete file on Google Drive");
+                // check that local and GoogleDrive folders are selected and stored
+                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
+                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
+                if (!setGdName) {
+                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setGdId) {
+                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                String selectedGoogleDriveId = storageUtils.getGoogleDriveStorageId();
+                String selectedGoogleDriveFolderName = storageUtils.getGoogleDriveStorageName();
+                // todo check internet connection state
+
+                Bundle bundle = new Bundle();
+                bundle.putString("googleDriveFolderId", selectedGoogleDriveId);
+                bundle.putString("googleDriveFolderName", selectedGoogleDriveFolderName);
+                Intent intent = new Intent(MainActivity.this, DeleteGoogleDriveFile.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
+                //finish();
             }
         });
     }

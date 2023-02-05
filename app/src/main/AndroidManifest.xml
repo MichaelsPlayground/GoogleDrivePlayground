@@ -72,6 +72,9 @@
         <activity
             android:name=".ListGoogleDriveFolder"
             android:exported="false" />
+        <activity
+            android:name=".DeleteGoogleDriveFile"
+            android:exported="false" />
     </application>
 
 </manifest>
