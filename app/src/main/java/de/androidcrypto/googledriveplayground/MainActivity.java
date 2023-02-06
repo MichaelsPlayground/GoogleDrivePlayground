@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
         selectGoogleDriveFolder = findViewById(R.id.btnMainSelectGoogleDriveFolder);
         syncLocalToGoogleDrive = findViewById(R.id.btnMainStartSimpleSyncLocalToGoogleDrive);
         syncGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleSyncGoogleDriveToLocal);
-        uploadFileFromInternalStorage = findViewById(R.id.btnMainStartSimpleUploadLocalToGoogleDrive);
+        uploadLocalToGoogleDrive = findViewById(R.id.btnMainStartSimpleUploadLocalToGoogleDrive);
         downloadGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleDownloadGoogleDriveToLocal);
         deleteGoogleDriveFile = findViewById(R.id.btnMainStartDeleteGoogleDriveFile);
 
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        uploadFileFromInternalStorage.setOnClickListener(new View.OnClickListener() {
+        uploadLocalToGoogleDrive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "uploadLocalToGoogleDriveFolder");
@@ -369,8 +369,8 @@ public class MainActivity extends AppCompatActivity {
 
                 // todo check internet connection state
 
-                //Intent intent = new Intent(MainActivity.this, SimpleDownloadGoogleDriveToLocalActivity.class);
-                //startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, SimpleDownloadGoogleDriveToLocalActivity.class);
+                startActivity(intent);
                 //finish();
             }
         });

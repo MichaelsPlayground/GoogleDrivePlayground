@@ -30,6 +30,9 @@
             android:name=".SimpleUploadLocalToGoogleDriveActivity"
             android:exported="false" />
         <activity
+            android:name=".SimpleDownloadGoogleDriveToLocalActivity"
+            android:exported="false" />
+        <activity
             android:name=".UploadInternalActivity"
             android:exported="false" />
         <activity
