@@ -292,14 +292,6 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
         Thread DoEncryptedUploadSubfolder = new Thread() {
             public void run() {
                 Log.i(TAG, "running Thread DoEncryptedUploadSubfolder");
-                /*
-                handler.post(new Runnable() {
-                    public void run() {
-                        startSync.setEnabled(false);
-                    }
-                });
-
-                 */
 
                 //for (int i = 0; i < numberOfFilesToSync; i++) {
                 final int progress = 1;
@@ -353,8 +345,6 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                 Uri uri = Uri.fromFile(filePath);
                 String mimeType = getMimeType(uri);
 
-                // todo don't forget to delete the tempFile after upload !!
-
                 //System.out.println("* uri: " + uri);
                 //System.out.println("* mimeType: " + mimeType);
 
@@ -380,6 +370,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                     //throw new RuntimeException(e);
                     Log.e(TAG, "IOException: " + e.getMessage());
                 }
+                deleteTempFileInInternalStorage();
                 handler.post(new Runnable() {
                     public void run() {
                         progressBar.setProgress(progress);

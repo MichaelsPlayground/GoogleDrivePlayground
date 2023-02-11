@@ -108,37 +108,6 @@
                 android:layout_height="wrap_content"
                 android:text="check storage permissions" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/etMainFilenameLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="16dp"
-                android:hint="filename(s):"
-                android:visibility="visible"
-                app:boxCornerRadiusBottomEnd="5dp"
-                app:boxCornerRadiusBottomStart="5dp"
-                app:boxCornerRadiusTopEnd="5dp"
-                app:boxCornerRadiusTopStart="5dp"
-                app:endIconMode="clear_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etMainFilename"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:focusable="false"
-                    android:text=""
-                    android:textSize="14sp"
-                    android:visibility="visible"
-                    tools:ignore="KeyboardInaccessibleWidget" />
-            </com.google.android.material.textfield.TextInputLayout>
-
             <Button
                 android:id="@+id/btnMainSignIn"
                 android:layout_width="match_parent"
@@ -270,6 +239,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="upload encrypted Local to Google Drive" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/etMainFilenameLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                android:hint="filename(s):"
+                android:visibility="visible"
+                app:boxCornerRadiusBottomEnd="5dp"
+                app:boxCornerRadiusBottomStart="5dp"
+                app:boxCornerRadiusTopEnd="5dp"
+                app:boxCornerRadiusTopStart="5dp"
+                app:endIconMode="clear_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMainFilename"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:focusable="false"
+                    android:text=""
+                    android:textSize="14sp"
+                    android:visibility="visible"
+                    tools:ignore="KeyboardInaccessibleWidget" />
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 
