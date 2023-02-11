@@ -36,6 +36,9 @@
             android:name=".SingleEncryptedUploadLocalToGoogleDriveActivity"
             android:exported="false" />
         <activity
+            android:name=".SingleEncryptedDownloadGoogleDriveToLocalActivity"
+            android:exported="false" />
+        <activity
             android:name=".UploadInternalActivity"
             android:exported="false" />
         <activity

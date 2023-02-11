@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     Button selectLocalFolder, selectGoogleDriveFolder;
     Button syncLocalToGoogleDrive, syncGoogleDriveToLocal;
     Button uploadLocalToGoogleDrive, downloadGoogleDriveToLocal;
-    Button uploadEncryptedLocalToGoogleDrive;
+    Button uploadEncryptedLocalToGoogleDrive, downloadEncryptedGoogleDriveToLocal;
 
     Button deleteGoogleDriveFile;
 
@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
         downloadGoogleDriveToLocal = findViewById(R.id.btnMainStartSingleDownloadGoogleDriveToLocal);
         deleteGoogleDriveFile = findViewById(R.id.btnMainStartDeleteGoogleDriveFile);
         uploadEncryptedLocalToGoogleDrive = findViewById(R.id.btnMainStartSingleEncryptedUploadLocalToGoogleDrive);
+        downloadEncryptedGoogleDriveToLocal = findViewById(R.id.btnMainStartSingleEncryptedDownloadGoogleDriveToLocal);
 
         // init the StorageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -419,6 +420,53 @@ public class MainActivity extends AppCompatActivity {
                 // todo check internet connection state
 
                 Intent intent = new Intent(MainActivity.this, SingleEncryptedUploadLocalToGoogleDriveActivity.class);
+                startActivity(intent);
+                //finish();
+            }
+        });
+
+        downloadEncryptedGoogleDriveToLocal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "downloadEncryptedGoogleDriveToLocalFolder");
+
+                // check that local and GoogleDrive folders are selected and stored
+                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
+                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
+                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
+                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
+                if (!setGdName) {
+                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setGdId) {
+                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setLocalName) {
+                    Log.i(TAG, "Local folder name is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+                if (!setLocalPath) {
+                    Log.i(TAG, "Local folder path is not stored yet, aborted");
+                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
+                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
+                    snackbar.show();
+                    return;
+                }
+
+                // todo check internet connection state
+
+                Intent intent = new Intent(MainActivity.this, SingleEncryptedDownloadGoogleDriveToLocalActivity.class);
                 startActivity(intent);
                 //finish();
             }

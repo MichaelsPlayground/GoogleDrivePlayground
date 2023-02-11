@@ -239,6 +239,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="upload encrypted Local to Google Drive" />
+            <Button
+                android:id="@+id/btnMainStartSingleEncryptedDownloadGoogleDriveToLocal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="download encrypted Google Drive to local" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/etMainFilenameLayout"
