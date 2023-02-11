@@ -65,7 +65,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
     private final String TAG = "SingleEncryptedUploadLocalToGD";
 
     RadioButton showUpload, showLocal, showGoogle;
-    Button startUpload;
+    //Button startUpload;
     ProgressBar progressBar;
     com.google.android.material.textfield.TextInputEditText passphraseInput;
     TextView tvProgress, tvProgressAbsolute;
@@ -99,7 +99,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
         showUpload = findViewById(R.id.rbSingleUploadToGoogleUpload);
         showLocal = findViewById(R.id.rbSingleUploadToGoogleSyncLocal);
         showGoogle = findViewById(R.id.rbSingleUploadToGoogleSyncGoogle);
-        startUpload = findViewById(R.id.btnSingleUploadToGoogleUpload);
+        //startUpload = findViewById(R.id.btnSingleUploadToGoogleUpload);
         listFiles = findViewById(R.id.lvSingleUploadToGoogle);
         progressBar = findViewById(R.id.pbSingleUploadToGoogleSyncGoogle);
         tvProgress = findViewById(R.id.tvSingleUploadToGoogleSyncGoogleProgress);
@@ -135,7 +135,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                 isSyncChecked = false;
                 isLocalChecked = true;
                 isGoogleChecked = false;
-                startUpload.setEnabled(false);
+                //startUpload.setEnabled(false);
                 listAllFolder();
             }
         });
@@ -146,7 +146,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                 isSyncChecked = false;
                 isLocalChecked = false;
                 isGoogleChecked = true;
-                startUpload.setEnabled(false);
+                //startUpload.setEnabled(false);
                 listAllFolder();
             }
         });

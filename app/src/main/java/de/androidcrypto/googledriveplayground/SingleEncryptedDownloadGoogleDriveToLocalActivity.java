@@ -36,21 +36,37 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.FileList;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompatActivity {
 
     private final String TAG = "SingleEncryptedDownloadGDToLocal";
 
     RadioButton showUpload, showLocal, showGoogle;
-    Button startUpload;
+    //Button startUpload;
     ProgressBar progressBar;
     TextView tvProgress, tvProgressAbsolute;
+    com.google.android.material.textfield.TextInputEditText passphraseInput;
+
     private Handler handler = new Handler();
     ListView listFiles;
     // default values
@@ -71,6 +87,8 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
 
     private Drive googleDriveServiceOwn = null;
 
+    private final int MINIMUM_PASSPHRASE_LENGTH = 4;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +102,7 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
         progressBar = findViewById(R.id.pbSingleDownloadGoogle);
         tvProgress = findViewById(R.id.tvSingleDownloadGoogleProgress);
         tvProgressAbsolute = findViewById(R.id.tvSingleDownloadGoogleProgressAbsolute);
+        passphraseInput = findViewById(R.id.etSingleDownloadGooglePassphrase);
 
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -115,7 +134,7 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                 isSyncChecked = false;
                 isLocalChecked = true;
                 isGoogleChecked = false;
-                startUpload.setEnabled(false);
+                //startUpload.setEnabled(false);
                 listAllFolder();
             }
         });
@@ -126,7 +145,7 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                 isSyncChecked = false;
                 isLocalChecked = false;
                 isGoogleChecked = true;
-                startUpload.setEnabled(false);
+                //startUpload.setEnabled(false);
                 listAllFolder();
             }
         });
@@ -203,6 +222,19 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                     listFiles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                            // first check that there is a passphrase set
+                            // get the passphrase from EditText as char array
+                            int passphraseLength = passphraseInput.length();
+                            if (passphraseLength < MINIMUM_PASSPHRASE_LENGTH) {
+                                Snackbar snackbar = Snackbar.make(view, "The entered passphrase is too short, aborted", Snackbar.LENGTH_LONG);
+                                snackbar.setBackgroundTint(ContextCompat.getColor(SingleEncryptedDownloadGoogleDriveToLocalActivity.this, R.color.red));
+                                snackbar.show();
+                                return;
+                            }
+                            char[] passphraseChar = new char[passphraseLength];
+                            passphraseInput.getText().getChars(0, passphraseLength, passphraseChar, 0);
+
                             String selectedFileName = (String) parent.getItemAtPosition(position);
                             String selectedFileId = "";
                             System.out.println("The selected fileName is : " + selectedFileName);
@@ -214,7 +246,7 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                                 if (!isLocalFolder) {
                                     selectedFileId = googleFileIds.get(position);
                                 }
-                                downloadSingleFileFromGoogleDriveSubfolderNew(view, selectedFileName, selectedFileId);
+                                downloadSingleEncryptedFileFromGoogleDriveSubfolderNew(view, selectedFileName, selectedFileId, passphraseChar);
                             }
                         }
                     });
@@ -224,8 +256,8 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
 
     }
 
-    private void downloadSingleFileFromGoogleDriveSubfolderNew(View view, String fileNameForDownload, String fileIdForDownload) {
-        Log.i(TAG, "Basic download a single file from Google Drive subfolder");
+    private void downloadSingleEncryptedFileFromGoogleDriveSubfolderNew(View view, String fileNameForDownload, String fileIdForDownload, char[] passphraseChar) {
+        Log.i(TAG, "Download a single encrypted file from Google Drive subfolder");
 
         final int MAX = 1;
         final int progress = 1;
@@ -234,7 +266,7 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
         tvProgressAbsolute.setText("(Info synchronization status)");
         Log.i(TAG, "start downloading the file " + fileNameForDownload + " with ID: " + fileIdForDownload);
 
-        Thread DoBasicDownloadSubfolder = new Thread() {
+        Thread DoEncryptedDownloadSubfolder = new Thread() {
             public void run() {
                 Log.i(TAG, "running Thread DoBasicDownloadSubfolder");
 
@@ -243,14 +275,28 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                 , recursiveFolder);
         File filePath = new File(externalStorageDir, fileNameForDownload);
 
+        //String tempDownloadFilename = "temp.dat";
+        File encryptedFilePath = new File(getFilesDir(), fileNameForDownload);
+
         OutputStream outputstream = null;
         try {
-            outputstream = new FileOutputStream(filePath);
+            //outputstream = new FileOutputStream(filePath);
+            outputstream = new FileOutputStream(encryptedFilePath);
             googleDriveServiceOwn.files().get(fileIdForDownload)
                     .executeMediaAndDownloadTo(outputstream);
             outputstream.flush();
             outputstream.close();
             Log.i(TAG, "file download: " + fileNameForDownload);
+
+            // now decrypt and save in external storage
+            File decryptedFilePath = decryptFileFromInternalStorageToExternalStorage(filePath, encryptedFilePath, passphraseChar);
+            if (decryptedFilePath == null) {
+                Log.e(TAG, "there was an error during decryption");
+                return;
+            } else {
+                Log.i(TAG, "the decryption was successful");
+            }
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -281,7 +327,54 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
             }
 
         };
-        DoBasicDownloadSubfolder.start();
+        DoEncryptedDownloadSubfolder.start();
+    }
+
+    private File decryptFileFromInternalStorageToExternalStorage(File filePathToSave, File encryptedFilePath, char[] passphraseChar) {
+        Log.i(TAG, "decryptInternalStorageFileToExternalStorage");
+        Log.i(TAG, "encryptedFilePath: " + encryptedFilePath.getAbsolutePath());
+        Log.i(TAG, "filePathToSave: " + filePathToSave.getAbsolutePath() + " passphraseChar: " + passphraseChar.toString());
+        String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
+        String AES_ALGORITHM = "AES/GCM/NOPadding";
+        int ITERATIONS = 10000;
+        int BUFFER_SIZE = 8096;
+        //String tempFilename = "temp.dat";
+        Cipher cipher;
+        try {
+            byte[] salt = new byte[32];
+            byte[] nonce = new byte[12];
+            cipher = Cipher.getInstance(AES_ALGORITHM);
+            try (//FileInputStream in = getApplicationContext().openFileInput(tempFilename); // i don't care about the path as all is local
+                 FileInputStream in = new FileInputStream(encryptedFilePath);
+                 CipherInputStream cipherInputStream = new CipherInputStream(in, cipher);
+                 FileOutputStream out = new FileOutputStream(filePathToSave)) // i don't care about the path as all is local
+            {
+                byte[] buffer = new byte[BUFFER_SIZE];
+                in.read(nonce);
+                in.read(salt);
+                SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+                KeySpec keySpec = new PBEKeySpec(passphraseChar, salt, ITERATIONS, 32 * 8);
+                byte[] key = secretKeyFactory.generateSecret(keySpec).getEncoded();
+                SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+                GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(16 * 8, nonce);
+                cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec);
+                int nread;
+                while ((nread = cipherInputStream.read(buffer)) > 0) {
+                    out.write(buffer, 0, nread);
+                }
+                out.flush();
+            } catch (IOException | InvalidAlgorithmParameterException | InvalidKeySpecException |
+                     InvalidKeyException e) {
+                Log.e(TAG, "ERROR on encryption: " + e.getMessage());
+                return null;
+                //throw new RuntimeException(e);
+            }
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {
+            Log.e(TAG, "ERROR on encryption: " + e.getMessage());
+            return null;
+            //throw new RuntimeException(e);
+        }
+        return filePathToSave;
     }
 
     private void listGoogleDriveFiles() {
