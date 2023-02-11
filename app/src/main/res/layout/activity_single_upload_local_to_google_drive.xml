@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".SimpleUploadLocalToGoogleDriveActivity">
+    tools:context=".SingleUploadLocalToGoogleDriveActivity">
 
     <TextView
         android:id="@+id/textView"
@@ -15,7 +15,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="2dp"
-        android:text="Simple upload from a local folder to a Google Drive folder"
+        android:text="Single upload from a local folder to a Google Drive folder"
         android:textAlignment="center"
         android:textSize="16sp"
         android:textStyle="bold" />
@@ -106,7 +106,7 @@
         android:layout_marginTop="2dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="8dp"
-        android:enabled="true"
+        android:enabled="false"
         android:text="start upload" />
 
     <ListView

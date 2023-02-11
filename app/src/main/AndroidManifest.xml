@@ -27,10 +27,13 @@
             android:name=".SimpleSyncGoogleDriveToLocalActivity"
             android:exported="false" />
         <activity
-            android:name=".SimpleUploadLocalToGoogleDriveActivity"
+            android:name=".SingleUploadLocalToGoogleDriveActivity"
             android:exported="false" />
         <activity
-            android:name=".SimpleDownloadGoogleDriveToLocalActivity"
+            android:name=".SingleDownloadGoogleDriveToLocalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SingleEncryptedUploadLocalToGoogleDriveActivity"
             android:exported="false" />
         <activity
             android:name=".UploadInternalActivity"

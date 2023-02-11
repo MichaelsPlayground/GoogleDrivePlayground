@@ -38,18 +38,36 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.FileList;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
-    private final String TAG = "SimpleUploadLocalToGD";
+public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatActivity {
+
+    private final String TAG = "SingleEncryptedUploadLocalToGD";
 
     RadioButton showUpload, showLocal, showGoogle;
     Button startUpload;
     ProgressBar progressBar;
+    com.google.android.material.textfield.TextInputEditText passphraseInput;
     TextView tvProgress, tvProgressAbsolute;
     private Handler handler = new Handler();
     ListView listFiles;
@@ -71,19 +89,22 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
 
     private Drive googleDriveServiceOwn = null;
 
+    private final int MINIMUM_PASSPHRASE_LENGTH = 4;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_simple_upload_local_to_google_drive);
+        setContentView(R.layout.activity_single_encrypted_upload_local_to_google_drive);
 
-        showUpload = findViewById(R.id.rbSimpleUploadToGoogleUpload);
-        showLocal = findViewById(R.id.rbSimpleUploadToGoogleSyncLocal);
-        showGoogle = findViewById(R.id.rbSimpleUploadToGoogleSyncGoogle);
-        startUpload = findViewById(R.id.btnSimpleUploadToGoogleUpload);
-        listFiles = findViewById(R.id.lvSimpleUploadToGoogle);
-        progressBar = findViewById(R.id.pbSimpleUploadToGoogleSyncGoogle);
-        tvProgress = findViewById(R.id.tvSimpleUploadToGoogleSyncGoogleProgress);
-        tvProgressAbsolute = findViewById(R.id.tvSimpleUploadToGoogleSyncGoogleProgressAbsolute);
+        showUpload = findViewById(R.id.rbSingleUploadToGoogleUpload);
+        showLocal = findViewById(R.id.rbSingleUploadToGoogleSyncLocal);
+        showGoogle = findViewById(R.id.rbSingleUploadToGoogleSyncGoogle);
+        startUpload = findViewById(R.id.btnSingleUploadToGoogleUpload);
+        listFiles = findViewById(R.id.lvSingleUploadToGoogle);
+        progressBar = findViewById(R.id.pbSingleUploadToGoogleSyncGoogle);
+        tvProgress = findViewById(R.id.tvSingleUploadToGoogleSyncGoogleProgress);
+        tvProgressAbsolute = findViewById(R.id.tvSingleUploadToGoogleSyncGoogleProgressAbsolute);
+        passphraseInput = findViewById(R.id.etSingleUploadToGooglePassphrase);
 
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -194,17 +215,31 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
             public void run() {
                 listFiles.setAdapter(adapter);
 
-                // todo check that setItenOnClickListener is running ONLY when isLocalFolder is TRUE !
+                // todo check that setItemOnClickListener is running ONLY when isLocalFolder is TRUE !
 
                 listFiles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                        // first check that there is a passphrase set
+                        // get the passphrase from EditText as char array
+                        int passphraseLength = passphraseInput.length();
+                        if (passphraseLength < MINIMUM_PASSPHRASE_LENGTH) {
+                            Snackbar snackbar = Snackbar.make(view, "The entered passphrase is too short, aborted", Snackbar.LENGTH_LONG);
+                            snackbar.setBackgroundTint(ContextCompat.getColor(SingleEncryptedUploadLocalToGoogleDriveActivity.this, R.color.red));
+                            snackbar.show();
+                            return;
+                        }
+                        char[] passphraseChar = new char[passphraseLength];
+                        passphraseInput.getText().getChars(0, passphraseLength, passphraseChar, 0);
+
                         String selectedFileName = (String) parent.getItemAtPosition(position);
                         System.out.println("The selected fileName is : " + selectedFileName);
 
                         if (googleFileNames.size() == 0) {
                             Log.i(TAG, "there are no files on Google Drive, uploading");
-                            uploadSingleFileToGoogleDriveSubfolderNew(view, selectedFileName);
+                            //uploadSingleFileToGoogleDriveSubfolderNew(view, selectedFileName);
+                            uploadEncryptedSingleFileToGoogleDriveSubfolderNew(view, selectedFileName, passphraseChar);
                         } else {
                             boolean fileIsExisiting = false;
                             String googleFileIdToDelete = "";
@@ -217,10 +252,12 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
                             }
                             if (fileIsExisiting) {
                                 Log.i(TAG, "the selectedFileName does exist on Google Drive, deleting the file first");
-                                deleteGoogleDriveFile(view, googleFileIdToDelete, selectedFileName);
+                                //deleteGoogleDriveFile(view, googleFileIdToDelete, selectedFileName);
+                                deleteEncryptedGoogleDriveFile(view, googleFileIdToDelete, selectedFileName, passphraseChar);
                             } else {
                                 Log.i(TAG, "the selectedFileName does not exist on Google Drive, start uploding");
-                                uploadSingleFileToGoogleDriveSubfolderNew(view, selectedFileName);
+                                //uploadSingleFileToGoogleDriveSubfolderNew(view, selectedFileName);
+                                uploadEncryptedSingleFileToGoogleDriveSubfolderNew(view, selectedFileName, passphraseChar);
                             }
                         }
                     }
@@ -230,8 +267,8 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
 
     }
 
-    private void uploadSingleFileToGoogleDriveSubfolderNew(View view, String fileNameForUpload) {
-        Log.i(TAG, "Basic upload a single file from internal storage to subfolder");
+    private void uploadEncryptedSingleFileToGoogleDriveSubfolderNew(View view, String fileNameForUpload, char[] passphraseChar) {
+        Log.i(TAG, "upload an encrypted single file from internal storage to subfolder");
 
         final int MAX = 1;
         progressBar.setMax(MAX);
@@ -252,9 +289,9 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
 
          */
         // https://developers.google.com/drive/api/guides/manage-uploads
-        Thread DoBasicUploadSubfolder = new Thread() {
+        Thread DoEncryptedUploadSubfolder = new Thread() {
             public void run() {
-                Log.i(TAG, "running Thread DoBasicUploadSubfolder");
+                Log.i(TAG, "running Thread DoEncryptedUploadSubfolder");
                 /*
                 handler.post(new Runnable() {
                     public void run() {
@@ -265,113 +302,256 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
                  */
 
                 //for (int i = 0; i < numberOfFilesToSync; i++) {
-                    final int progress = 1;
+                final int progress = 1;
 
-                    String folderId = googleDriveFolderId;
-                    if (folderId.equals("")) {
-                        Log.e(TAG, "The destination folder does not exist, abort: " + fileNameForUpload);
-                        return;
-                    } else {
-                        Log.i(TAG, "The destination folder is existing, start uploading to folderId: " + folderId);
-                    }
+                String folderId = googleDriveFolderId;
+                if (folderId.equals("")) {
+                    Log.e(TAG, "The destination folder does not exist, abort: " + fileNameForUpload);
+                    return;
+                } else {
+                    Log.i(TAG, "The destination folder is existing, start uploading to folderId: " + folderId);
+                }
 
-                    com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
-                    //fileMetadata.setName("photo.jpg");
-                    fileMetadata.setName(fileNameForUpload);
-                    fileMetadata.setParents(Collections.singletonList(folderId));
-                    // File's content.
-                    String recursiveFolder = localFolderPath.replaceFirst("root", "");
-                    java.io.File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory("")
-                            , recursiveFolder);
-                    java.io.File filePath = new java.io.File(externalStorageDir, fileNameForUpload);
-                    if (filePath.exists()) {
-                        Log.i(TAG, "filePath " + fileNameForUpload + " is existing");
-                    } else {
-                        Log.e(TAG, "filePath " + fileNameForUpload + " is NOT existing");
-                        return;
-                    }
+                com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
+                //fileMetadata.setName("photo.jpg");
+                fileMetadata.setName(fileNameForUpload);
+                fileMetadata.setParents(Collections.singletonList(folderId));
+                // File's content.
+                String recursiveFolder = localFolderPath.replaceFirst("root", "");
+                File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory("")
+                        , recursiveFolder);
+                File filePath = new File(externalStorageDir, fileNameForUpload);
+                if (filePath.exists()) {
+                    Log.i(TAG, "filePath " + fileNameForUpload + " is existing");
+                } else {
+                    Log.e(TAG, "filePath " + fileNameForUpload + " is NOT existing");
+                    return;
+                }
 
-                    // get media type
-                    Uri uri = Uri.fromFile(filePath);
-                    String mimeType = getMimeType(uri);
-                    //System.out.println("* uri: " + uri);
-                    //System.out.println("* mimeType: " + mimeType);
+                // here we are encrypting the file from external storage to internal storage / cache and
+                // run the upload from there
+                File encryptedFilePath = encryptExternalStorageFileToInternalStorage(filePath, passphraseChar);
+                if (encryptedFilePath == null) {
+                    Log.i(TAG, "Error in encrypting the file, aborted");
+                    return;
+                }
+                Log.i(TAG, "The file was encrypted to " + encryptedFilePath.getAbsolutePath());
 
-                    // todo Specify media type and file-path for file.
-                    //FileContent mediaContent = new FileContent("image/jpeg", filePath);
-                    //FileContent mediaContent = new FileContent("text/plain", filePath);
-                    FileContent mediaContent = new FileContent(mimeType, filePath);
-                    try {
-                        com.google.api.services.drive.model.File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
-                                .setFields("id, parents")
-                                .execute();
-                        //System.out.println("File ID: " + file.getId());
-                        Log.i(TAG, "The file was saved with fileId: " + file.getId());
-                        Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
-                        //return file.getId();
-                    } catch (GoogleJsonResponseException e) {
-                        // TODO(developer) - handle error appropriately
-                        System.err.println("Unable to upload file: " + e.getDetails());
-                        //throw e;
-                        Log.e(TAG, "ERROR: " + e.getDetails());
-                    } catch (IOException e) {
-                        //throw new RuntimeException(e);
-                        Log.e(TAG, "IOException: " + e.getMessage());
-                    }
-                    handler.post(new Runnable() {
-                        public void run() {
-                            progressBar.setProgress(progress);
-                            int percent = (progress * 100) / MAX;
 
-                            tvProgress.setText("Percent: " + percent + " %");
-                            tvProgressAbsolute.setText("files uploaded: " + progress + " of total " + MAX + " files");
-                            if(progress == MAX)  {
-                                tvProgress.setText("Completed!");
-                                tvProgressAbsolute.setText("Completed upload (" + MAX + ") files!");
-                                //startSync.setEnabled(true);
-                            }
+                // this is just a test for decryption here
+                File filePathDecrypt = new File(externalStorageDir, "t1.pdf");
+                File decryptedFile = decryptFileFromInternalStorageToExternalStorage(filePathDecrypt, passphraseChar);
+                if (decryptedFile == null) {
+                    Log.i(TAG, "Error in decrypting the file, aborted");
+                    return;
+                }
+                Log.i(TAG, "The file was decrypted to " + decryptedFile.getAbsolutePath());
+
+                //deleteTempFileInInternalStorage();
+
+                // get media type
+                Uri uri = Uri.fromFile(filePath);
+                String mimeType = getMimeType(uri);
+
+                // todo don't forget to delete the tempFile after upload !!
+
+                //System.out.println("* uri: " + uri);
+                //System.out.println("* mimeType: " + mimeType);
+
+                // todo Specify media type and file-path for file.
+                //FileContent mediaContent = new FileContent("image/jpeg", filePath);
+                //FileContent mediaContent = new FileContent("text/plain", filePath);
+                //FileContent mediaContent = new FileContent(mimeType, filePath);
+                FileContent mediaContent = new FileContent(mimeType, encryptedFilePath);
+                try {
+                    com.google.api.services.drive.model.File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
+                            .setFields("id, parents")
+                            .execute();
+                    //System.out.println("File ID: " + file.getId());
+                    Log.i(TAG, "The file was saved with fileId: " + file.getId());
+                    Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
+                    //return file.getId();
+                } catch (GoogleJsonResponseException e) {
+                    // TODO(developer) - handle error appropriately
+                    System.err.println("Unable to upload file: " + e.getDetails());
+                    //throw e;
+                    Log.e(TAG, "ERROR: " + e.getDetails());
+                } catch (IOException e) {
+                    //throw new RuntimeException(e);
+                    Log.e(TAG, "IOException: " + e.getMessage());
+                }
+                handler.post(new Runnable() {
+                    public void run() {
+                        progressBar.setProgress(progress);
+                        int percent = (progress * 100) / MAX;
+
+                        tvProgress.setText("Percent: " + percent + " %");
+                        tvProgressAbsolute.setText("files uploaded: " + progress + " of total " + MAX + " files");
+                        if (progress == MAX) {
+                            tvProgress.setText("Completed!");
+                            tvProgressAbsolute.setText("Completed upload (" + MAX + ") files!");
+                            //startSync.setEnabled(true);
                         }
-                    });
+                    }
+                });
                 //}
                 Snackbar snackbar = Snackbar.make(view, "The file was uploaded", Snackbar.LENGTH_SHORT);
-                snackbar.setBackgroundTint(ContextCompat.getColor(SimpleUploadLocalToGoogleDriveActivity.this, R.color.green));
+                snackbar.setBackgroundTint(ContextCompat.getColor(SingleEncryptedUploadLocalToGoogleDriveActivity.this, R.color.green));
                 snackbar.show();
                 listAllFolder();
             }
         };
-        DoBasicUploadSubfolder.start();
+        DoEncryptedUploadSubfolder.start();
     }
 
-    private void deleteGoogleDriveFile(View view, String fileToDeleteId, String fileNameToUpload) {
+    /**
+     * this method will encrypt a file from external storage to internal storage / cache folder
+     * the method is using AES GCM mode and PBKDF2 algorithm PBKDF2WithHmacSHA256 for key derivation
+     * IMPORTANT: this method needs to run NOT on the main thread as it will block the UI otherwise
+     * NOTE: if you don't enter the correct passphrase there is NO WAY to recover the file !!!
+     *
+     * @param filePath       the path to the unencrypted file on external storage
+     * @param passphraseChar the file will be encrypted with this passphrase
+     * @return the file path to the encrypted file
+     */
+    private File encryptExternalStorageFileToInternalStorage(File filePath, char[] passphraseChar) {
+        Log.i(TAG, "encryptExternalStorageFileToInternalStorage");
+        Log.i(TAG, "filePath: " + filePath.getAbsolutePath() + " passphraseChar: " + passphraseChar.toString());
+        String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
+        String AES_ALGORITHM = "AES/GCM/NOPadding";
+        int ITERATIONS = 10000;
+        int BUFFER_SIZE = 8096;
+        String tempFilename = "temp.dat";
+        Cipher cipher;
+        try {
+            SecureRandom secureRandom = new SecureRandom();
+            byte[] salt = new byte[32];
+            secureRandom.nextBytes(salt);
+            byte[] nonce = new byte[12];
+            secureRandom.nextBytes(nonce);
+            cipher = Cipher.getInstance(AES_ALGORITHM);
+
+            try (FileInputStream in = new FileInputStream(filePath);
+                 FileOutputStream out = getApplicationContext().openFileOutput(tempFilename, Context.MODE_PRIVATE);
+                 CipherOutputStream encryptedOutputStream = new CipherOutputStream(out, cipher);) {
+                out.write(nonce);
+                out.write(salt);
+                SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+                KeySpec keySpec = new PBEKeySpec(passphraseChar, salt, ITERATIONS, 32 * 8);
+                byte[] key = secretKeyFactory.generateSecret(keySpec).getEncoded();
+                SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+                GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(16 * 8, nonce);
+                cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, gcmParameterSpec);
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int nread;
+                while ((nread = in.read(buffer)) > 0) {
+                    encryptedOutputStream.write(buffer, 0, nread);
+                }
+                encryptedOutputStream.flush();
+            } catch (IOException | InvalidKeySpecException | InvalidAlgorithmParameterException |
+                     InvalidKeyException e) {
+                Log.e(TAG, "ERROR on encryption: " + e.getMessage());
+                return null;
+                //throw new RuntimeException(e);
+            }
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            Log.e(TAG, "ERROR on encryption: " + e.getMessage());
+            return null;
+            //throw new RuntimeException(e);
+        }
+        return new File(getFilesDir(), tempFilename);
+    }
+
+    private File decryptFileFromInternalStorageToExternalStorage(File filePath, char[] passphraseChar) {
+        Log.i(TAG, "decryptInternalStorageFileToExternalStorage");
+        Log.i(TAG, "filePath: " + filePath.getAbsolutePath() + " passphraseChar: " + passphraseChar.toString());
+        String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
+        String AES_ALGORITHM = "AES/GCM/NOPadding";
+        int ITERATIONS = 10000;
+        int BUFFER_SIZE = 8096;
+        String tempFilename = "temp.dat";
+        Cipher cipher;
+        try {
+            byte[] salt = new byte[32];
+            byte[] nonce = new byte[12];
+            cipher = Cipher.getInstance(AES_ALGORITHM);
+            try (FileInputStream in = getApplicationContext().openFileInput(tempFilename); // i don't care about the path as all is local
+                 CipherInputStream cipherInputStream = new CipherInputStream(in, cipher);
+                 FileOutputStream out = new FileOutputStream(filePath)) // i don't care about the path as all is local
+            {
+                byte[] buffer = new byte[8192];
+                in.read(nonce);
+                in.read(salt);
+                SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+                KeySpec keySpec = new PBEKeySpec(passphraseChar, salt, ITERATIONS, 32 * 8);
+                byte[] key = secretKeyFactory.generateSecret(keySpec).getEncoded();
+                SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
+                GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(16 * 8, nonce);
+                cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec);
+                int nread;
+                while ((nread = cipherInputStream.read(buffer)) > 0) {
+                    out.write(buffer, 0, nread);
+                }
+                out.flush();
+            } catch (IOException | InvalidAlgorithmParameterException | InvalidKeySpecException |
+                     InvalidKeyException e) {
+                Log.e(TAG, "ERROR on encryption: " + e.getMessage());
+                return null;
+                //throw new RuntimeException(e);
+            }
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {
+            Log.e(TAG, "ERROR on encryption: " + e.getMessage());
+            return null;
+            //throw new RuntimeException(e);
+        }
+        return filePath;
+    }
+
+    /**
+     * this method is deleting the temp file used for encryption and decryption
+     * @return TRUE if file could get deleted and FALSE if not
+     */
+    private boolean deleteTempFileInInternalStorage() {
+        Log.i(TAG, "deleteTempFileInInternalStorage");
+        String tempFilename = "temp.dat";
+        boolean deletionResult = false;
+        File file = new File(getApplicationContext().getFilesDir(), tempFilename);
+        if (file.exists()) {
+            deletionResult = file.delete();
+        }
+        return deletionResult;
+    }
+
+
+    private void deleteEncryptedGoogleDriveFile(View view, String fileToDeleteId, String fileNameToUpload, char[] passphraseChar) {
         Log.i(TAG, "deleteGoogleDriveFile id: " + fileToDeleteId);
 
-        Thread DoDeleteGoogleDriveFile = new Thread() {
+        Thread DoDeleteEncryptedGoogleDriveFile = new Thread() {
             public void run() {
                 try {
                     googleDriveServiceOwn.files().delete(fileToDeleteId).execute();
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(SimpleUploadLocalToGoogleDriveActivity.this, "selected file deleted", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SingleEncryptedUploadLocalToGoogleDriveActivity.this, "selected file deleted", Toast.LENGTH_SHORT).show();
                         }
                     });
                     // todo upload file now
-                    uploadSingleFileToGoogleDriveSubfolderNew(view, fileNameToUpload);
+                    uploadEncryptedSingleFileToGoogleDriveSubfolderNew(view, fileNameToUpload, passphraseChar);
                     //listFiles();
                 } catch (IOException e) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(SimpleUploadLocalToGoogleDriveActivity.this, "ERROR: could not delete the selected file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(SingleEncryptedUploadLocalToGoogleDriveActivity.this, "ERROR: could not delete the selected file: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     });
                     //throw new RuntimeException(e);
                 }
             }
         };
-        DoDeleteGoogleDriveFile.start();
+        DoDeleteEncryptedGoogleDriveFile.start();
     }
-
 
     private void listGoogleDriveFiles() {
         Log.i(TAG, "listGoogleDriveFiles");
@@ -581,7 +761,7 @@ public class SimpleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
-                    Toast.makeText(SimpleUploadLocalToGoogleDriveActivity.this, "Unable to sign in: " + exception.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(SingleEncryptedUploadLocalToGoogleDriveActivity.this, "Unable to sign in: " + exception.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 

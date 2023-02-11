@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".SimpleDownloadGoogleDriveToLocalActivity">
+    tools:context=".SingleDownloadGoogleDriveToLocalActivity">
 
     <TextView
         android:id="@+id/textView"
@@ -15,7 +15,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="2dp"
-        android:text="Simple download from a Google Drive folder to a local folder"
+        android:text="Single download from a Google Drive folder to a local folder"
         android:textAlignment="center"
         android:textSize="16sp"
         android:textStyle="bold" />
