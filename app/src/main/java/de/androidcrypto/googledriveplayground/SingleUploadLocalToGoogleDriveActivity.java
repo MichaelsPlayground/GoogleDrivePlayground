@@ -1,5 +1,7 @@
 package de.androidcrypto.googledriveplayground;
 
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -21,13 +23,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -333,9 +333,7 @@ public class SingleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
                         }
                     });
                 //}
-                Snackbar snackbar = Snackbar.make(view, "The file was uploaded", Snackbar.LENGTH_SHORT);
-                snackbar.setBackgroundTint(ContextCompat.getColor(SingleUploadLocalToGoogleDriveActivity.this, R.color.green));
-                snackbar.show();
+                showSnackbarGreen(view, "The file was uploaded");
                 listAllFolder();
             }
         };

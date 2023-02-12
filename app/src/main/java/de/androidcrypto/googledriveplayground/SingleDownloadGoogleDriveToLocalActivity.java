@@ -1,5 +1,7 @@
 package de.androidcrypto.googledriveplayground;
 
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -240,46 +242,44 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
             public void run() {
                 Log.i(TAG, "running Thread DoBasicDownloadSubfolder");
 
-        String recursiveFolder = localFolderPath.replaceFirst("root", "");
-        File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory("")
-                , recursiveFolder);
-        File filePath = new File(externalStorageDir, fileNameForDownload);
+                String recursiveFolder = localFolderPath.replaceFirst("root", "");
+                File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory("")
+                        , recursiveFolder);
+                File filePath = new File(externalStorageDir, fileNameForDownload);
 
-        OutputStream outputstream = null;
-        try {
-            outputstream = new FileOutputStream(filePath);
-            googleDriveServiceOwn.files().get(fileIdForDownload)
-                    .executeMediaAndDownloadTo(outputstream);
-            outputstream.flush();
-            outputstream.close();
-            Log.i(TAG, "file download: " + fileNameForDownload);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //Toast.makeText(SimpleSyncGoogleDriveToLocalActivity.this, "file downloaded " + fileName + " to Internal Storage", Toast.LENGTH_SHORT).show();
+                OutputStream outputstream = null;
+                try {
+                    outputstream = new FileOutputStream(filePath);
+                    googleDriveServiceOwn.files().get(fileIdForDownload)
+                            .executeMediaAndDownloadTo(outputstream);
+                    outputstream.flush();
+                    outputstream.close();
+                    Log.i(TAG, "file download: " + fileNameForDownload);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //Toast.makeText(SimpleSyncGoogleDriveToLocalActivity.this, "file downloaded " + fileName + " to Internal Storage", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } catch (IOException e) {
+                    Log.e(TAG, "ERROR: " + e.getMessage());
+                    //throw new RuntimeException(e);
                 }
-            });
-        } catch (IOException e) {
-            Log.e(TAG, "ERROR: " + e.getMessage());
-            //throw new RuntimeException(e);
-        }
-        handler.post(new Runnable() {
-            public void run() {
-                progressBar.setProgress(progress);
-                int percent = (progress * 100) / MAX;
+                handler.post(new Runnable() {
+                    public void run() {
+                        progressBar.setProgress(progress);
+                        int percent = (progress * 100) / MAX;
 
-                tvProgress.setText("Percent: " + percent + " %");
-                tvProgressAbsolute.setText("files downloaded: " + progress + " of total " + MAX + " files");
-                if (progress == MAX) {
-                    tvProgress.setText("Completed!");
-                    tvProgressAbsolute.setText("Completed download (" + MAX + ") files!");
-                    //startSync.setEnabled(true);
-                }
-            }
-        });
-        Snackbar snackbar = Snackbar.make(view, "The file was downloaded", Snackbar.LENGTH_SHORT);
-        snackbar.setBackgroundTint(ContextCompat.getColor(SingleDownloadGoogleDriveToLocalActivity.this, R.color.green));
-        snackbar.show();
+                        tvProgress.setText("Percent: " + percent + " %");
+                        tvProgressAbsolute.setText("files downloaded: " + progress + " of total " + MAX + " files");
+                        if (progress == MAX) {
+                            tvProgress.setText("Completed!");
+                            tvProgressAbsolute.setText("Completed download (" + MAX + ") files!");
+                            //startSync.setEnabled(true);
+                        }
+                    }
+                });
+                showSnackbarGreen(view, "The file was downloaded");
             }
 
         };

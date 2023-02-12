@@ -2,11 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/viewMainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="16dp"
     android:orientation="vertical"
-    android:id="@+id/viewMainLayout"
     tools:context=".MainActivity">
 
     <TextView
@@ -27,45 +27,33 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btnMainGenerateFiles"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="generate files" />
+                android:layout_height="38dp"
+                android:background="@drawable/round_rect_shape"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnMainGenerateRandomFiles"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="generate random files" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:text="user is signed in: " />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="38dp"
-            android:background="@drawable/round_rect_shape"
-            android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMainUserIsSignedIn"
+                    style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="16dp"
+                    android:clickable="false"
+                    app:backgroundTint="@color/red"
+                    app:cornerRadius="10dp" />
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="28dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="16dp"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:text="user is signed in: " />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnMainUserIsSignedIn"
-                style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="16dp"
-                android:clickable="false"
-                app:backgroundTint="@color/red"
-                app:cornerRadius="10dp" />
-
-        </LinearLayout>
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -239,6 +227,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="upload encrypted Local to Google Drive" />
+
             <Button
                 android:id="@+id/btnMainStartSingleEncryptedDownloadGoogleDriveToLocal"
                 android:layout_width="match_parent"
@@ -277,7 +266,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
-
 
 
     </ScrollView>

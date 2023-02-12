@@ -1,12 +1,9 @@
 package de.androidcrypto.googledriveplayground;
 
 import static android.os.Build.VERSION.SDK_INT;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarOrange;
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarRed;
 
 import android.Manifest;
 import android.app.Activity;
@@ -26,23 +23,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -53,14 +43,18 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "GD Playground Main";
 
-    private final String basicFilename = "txtfile";
-    private final String fileExtension = ".txt";
-
-    Button generateFiles, generateRandomFiles, signIn, signOut, checkSignStatus, queryFiles;
+    Button signIn, signOut, checkSignStatus, queryFiles;
     Button grantStoragePermissions, checkStoragePermissions;
     com.google.android.material.button.MaterialButton storagePermissionsGranted, userIsSignedIn;
     Button uploadFileFromInternalStorage;
@@ -100,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
 
         view = findViewById(R.id.viewMainLayout);
 
-        generateFiles = findViewById(R.id.btnMainGenerateFiles);
-        generateRandomFiles = findViewById(R.id.btnMainGenerateRandomFiles);
         grantStoragePermissions = findViewById(R.id.btnMainGrantStoragePermissions);
         checkStoragePermissions = findViewById(R.id.btnMainCheckStoragePermissions);
 
@@ -179,12 +171,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "resultString: " + resultString);
                 storeTheGoogleDriveSelectedFolder();
             }
-            //bundle.putString("IntentType", "selectGoogleDriveFolder");
-            //bundle.putString("IntentType", "selectSharedFolder");
-            //bundle.putString("googleDriveFolderId", googleDriveFolderId);
-            //bundle.putString("googleDriveFolderName", googleDriveFolderName);
-
-
 
         }
 
@@ -193,37 +179,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "syncLocalToGoogleDriveFolder");
 
-                // check that local and GoogleDrive folders are selected and stored
-                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
-                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
-                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
-                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
-                if (!setGdName) {
-                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setGdId) {
-                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalName) {
-                    Log.i(TAG, "Local folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalPath) {
-                    Log.i(TAG, "Local folder path is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+                if (!checkForStoredFolders()) {
+                    Log.i(TAG, "local and/or Google Drive folder not stored yet, aborted");
                     return;
                 }
 
@@ -240,37 +197,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "syncGoogleDriveToLocalFolder");
 
-                // check that local and GoogleDrive folders are selected and stored
-                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
-                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
-                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
-                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
-                if (!setGdName) {
-                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setGdId) {
-                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalName) {
-                    Log.i(TAG, "Local folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalPath) {
-                    Log.i(TAG, "Local folder path is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+                if (!checkForStoredFolders()) {
+                    Log.i(TAG, "local and/or Google Drive folder not stored yet, aborted");
                     return;
                 }
 
@@ -287,37 +215,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "uploadLocalToGoogleDriveFolder");
 
-                // check that local and GoogleDrive folders are selected and stored
-                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
-                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
-                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
-                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
-                if (!setGdName) {
-                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setGdId) {
-                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalName) {
-                    Log.i(TAG, "Local folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalPath) {
-                    Log.i(TAG, "Local folder path is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+                if (!checkForStoredFolders()) {
+                    Log.i(TAG, "local and/or Google Drive folder not stored yet, aborted");
                     return;
                 }
 
@@ -334,37 +233,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "downloadGoogleDriveToLocalFolder");
 
-                // check that local and GoogleDrive folders are selected and stored
-                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
-                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
-                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
-                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
-                if (!setGdName) {
-                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setGdId) {
-                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalName) {
-                    Log.i(TAG, "Local folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalPath) {
-                    Log.i(TAG, "Local folder path is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+                if (!checkForStoredFolders()) {
+                    Log.i(TAG, "local and/or Google Drive folder not stored yet, aborted");
                     return;
                 }
 
@@ -381,37 +251,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "uploadEncryptedLocalToGoogleDriveFolder");
 
-                // check that local and GoogleDrive folders are selected and stored
-                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
-                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
-                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
-                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
-                if (!setGdName) {
-                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setGdId) {
-                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalName) {
-                    Log.i(TAG, "Local folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalPath) {
-                    Log.i(TAG, "Local folder path is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+                if (!checkForStoredFolders()) {
+                    Log.i(TAG, "local and/or Google Drive folder not stored yet, aborted");
                     return;
                 }
 
@@ -430,37 +271,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "downloadEncryptedGoogleDriveToLocalFolder");
 
-                // check that local and GoogleDrive folders are selected and stored
-                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
-                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
-                boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
-                boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
-                if (!setGdName) {
-                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setGdId) {
-                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalName) {
-                    Log.i(TAG, "Local folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                if (!setLocalPath) {
-                    Log.i(TAG, "Local folder path is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Local folder path is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+                if (!checkForStoredFolders()) {
+                    Log.i(TAG, "local and/or Google Drive folder not stored yet, aborted");
                     return;
                 }
 
@@ -948,71 +760,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        generateFiles.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "generate files");
-                // this is generating 5 text files in internal storage
-                String basicString = "This is a test file for uploading to Google Drive.\nIt is file number ";
-
-                int numberOfFiles = 5;
-                for (int i = 1; i < numberOfFiles + 1; i++) {
-                    FileWriter writer = null;
-                    try {
-                        String filename = basicFilename + i + fileExtension;
-                        String dataToWrite = basicString + i + "\n" +
-                                "generated on " + new Date();
-                        java.io.File file = new java.io.File(view.getContext().getFilesDir(), filename);
-                        writer = new FileWriter(file);
-                        writer.append(dataToWrite);
-                        writer.flush();
-                        writer.close();
-                        Log.i(TAG, "file generated number: " + i);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Error: " + e.getMessage());
-                        Toast.makeText(MainActivity.this, "ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                }
-                Toast.makeText(MainActivity.this, "generated " + numberOfFiles + " files in internal storage", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        generateRandomFiles.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "generate random files");
-                // this is generating 3 text files in internal storage
-                String basicString = "This is a test file for uploading to Google Drive.\nIt is file number ";
-
-                int numberOfFiles = 3;
-                for (int i = 1; i < numberOfFiles + 1; i++) {
-                    FileWriter writer = null;
-                    try {
-                        SimpleDateFormat df = new SimpleDateFormat("yyMMdd_hhmmss-SSS", Locale.getDefault());
-                        String date = df.format(new Date());
-
-                        String filename = basicFilename + "_" + date + fileExtension;
-                        String dataToWrite = basicString + i + "\n" +
-                                "generated on " + new Date();
-                        java.io.File file = new java.io.File(view.getContext().getFilesDir(), filename);
-                        writer = new FileWriter(file);
-                        writer.append(dataToWrite);
-                        writer.flush();
-                        writer.close();
-                        Log.i(TAG, "file generated number: " + i);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Error: " + e.getMessage());
-                        Toast.makeText(MainActivity.this, "ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        return;
-                    }
-                }
-                Toast.makeText(MainActivity.this, "generated " + numberOfFiles + " files in internal storage", Toast.LENGTH_SHORT).show();
-            }
-        });
-
         signOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -1032,22 +779,15 @@ public class MainActivity extends AppCompatActivity {
                 // first check an internet connection
                 int conStat = getNetworkStatus();
                 if (conStat == 0) {
-                    Snackbar snackbar = Snackbar.make(view, "Activate an internet connection before run any action on Google Drive", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+                    showSnackbarRed(view, "Activate an internet connection before run any action on Google Drive");
                     return;
                 }
                 if (conStat == 1) {
-                    Snackbar snackbar = Snackbar.make(view, "WIFI internet connection detected", Snackbar.LENGTH_SHORT);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
-                    snackbar.show();
+                    showSnackbarGreen(view, "WIFI internet connection detected");
                 }
                 if (conStat > 1) {
-                    Snackbar snackbar = Snackbar.make(view, "Your internet connection could be metered - think about before beginning any data transfer", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.orange));
-                    snackbar.show();
+                    showSnackbarOrange(view, "Your internet connection could be metered - think about before beginning any data transfer");
                 }
-
                 requestSignIn();
             }
         });
@@ -1057,14 +797,10 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Log.i(TAG, "check sign status");
                     if (checkLoginStatus()) {
-                        Snackbar snackbar = Snackbar.make(view, "User is signed in to Google Drive", Snackbar.LENGTH_SHORT);
-                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
-                        snackbar.show();
+                        showSnackbarGreen(view, "User is signed in to Google Drive");
                         userIsSignedIn.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
                     } else {
-                        Snackbar snackbar = Snackbar.make(view, "User is NOT signed in to Google Drive", Snackbar.LENGTH_LONG);
-                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                        snackbar.show();
+                        showSnackbarRed(view, "User is NOT signed in to Google Drive");
                         userIsSignedIn.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.red));
                     }
 
@@ -1101,15 +837,11 @@ public class MainActivity extends AppCompatActivity {
                 // R = SDK 30
                 if (SDK_INT >= Build.VERSION_CODES.R) {
                     if (Environment.isExternalStorageManager()) {
-                        Snackbar snackbar = Snackbar.make(view, "Storage permissions granted", Snackbar.LENGTH_SHORT);
-                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
-                        snackbar.show();
+                        showSnackbarGreen(view, "Storage permissions granted");
                         storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
                     } else {
                         // storage permission not granted
-                        Snackbar snackbar = Snackbar.make(view, "Please grant storage permissions", Snackbar.LENGTH_LONG);
-                        snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                        snackbar.show();
+                        showSnackbarRed(view, "Please grant storage permissions");
                         storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.red));
                     }
                 }
@@ -1120,23 +852,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "delete file on Google Drive");
-                // check that local and GoogleDrive folders are selected and stored
-                boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
-                boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
-                if (!setGdName) {
-                    Log.i(TAG, "Google Drive folder name is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder name is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
+
+                if (!checkForStoredFolderGoogleDrive()) {
+                    Log.i(TAG, "Google Drive folder name/ID is not stored yet, aborted");
+                    showSnackbarRed(view, "Google Drive folder name/ID is not stored yet, aborted");
                     return;
                 }
-                if (!setGdId) {
-                    Log.i(TAG, "Google Drive folder ID is not stored yet, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "Google Drive folder ID is not stored yet, aborted", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
+
                 String selectedGoogleDriveId = storageUtils.getGoogleDriveStorageId();
                 String selectedGoogleDriveFolderName = storageUtils.getGoogleDriveStorageName();
                 // todo check internet connection state
@@ -1153,6 +875,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * this method checks that local and Google Drive folders are stored
+     * @return TRUE if everything is OK and FALSE if not
+     */
+    private boolean checkForStoredFolders() {
+        // check that local and GoogleDrive folders are selected and stored
+        boolean googleDriveFolderStored = checkForStoredFolderGoogleDrive();
+        if (!googleDriveFolderStored) {
+            showSnackbarRed(view, "Google Drive folder name/ID is not stored yet, aborted");
+            return false;
+        }
+        boolean localFolderStored = checkForStoredFolderLocal();
+        if (!localFolderStored) {
+            showSnackbarRed(view, "Local folder name/path is not stored yet, aborted");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkForStoredFolderLocal() {
+        // check that local folder is selected and stored
+        boolean setLocalName = storageUtils.isLocalStorageNameAvailable();
+        boolean setLocalPath = storageUtils.isLocalStoragePathAvailable();
+        if (!setLocalName) {
+            return false;
+        }
+        if (!setLocalPath) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkForStoredFolderGoogleDrive() {
+        // check that GoogleDrive folder is selected and stored
+        boolean setGdName = storageUtils.isGoogleDriveStorageNameAvailable();
+        boolean setGdId = storageUtils.isGoogleDriveStorageIdAvailable();
+        if (!setGdName) {
+            return false;
+        }
+        if (!setGdId) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * section permission granting
      */
 
@@ -1163,9 +930,7 @@ public class MainActivity extends AppCompatActivity {
                 permissions[0]) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 permissions[1]) == PackageManager.PERMISSION_GRANTED) {
-            Snackbar snackbar = Snackbar.make(view, "Storage permissions granted", Snackbar.LENGTH_SHORT);
-            snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
-            snackbar.show();
+            showSnackbarGreen(view, "Storage permissions granted");
             storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
             Log.i(TAG, "permissions were granted on device below SDK30");
         } else {
@@ -1180,9 +945,7 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_PERMISSION_BELOW_SDK30) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Snackbar snackbar = Snackbar.make(view, "Storage permissions granted", Snackbar.LENGTH_SHORT);
-                snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.green));
-                snackbar.show();
+                showSnackbarGreen(view, "Storage permissions granted");
                 storagePermissionsGranted.setBackgroundColor(ContextCompat.getColor(MainActivity.this, R.color.green));
                 Log.i(TAG, "permissions were granted on device below SDK30");
             } else {
@@ -1550,9 +1313,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean checkLoginStatus() {
         if (googleDriveServiceOwn == null) {
             Log.e(TAG, "please sign in before list folder");
-            Snackbar snackbar = Snackbar.make(view, "Please sign in before run any action", Snackbar.LENGTH_LONG);
-            snackbar.setBackgroundTint(ContextCompat.getColor(MainActivity.this, R.color.red));
-            snackbar.show();
+            showSnackbarRed(view, "Please sign in before run any action");
             return false;
         } else return true;
     }

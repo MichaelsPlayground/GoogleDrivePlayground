@@ -1,5 +1,7 @@
 package de.androidcrypto.googledriveplayground;
 
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -241,9 +243,7 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
                         }
                     });
                 }
-                Snackbar snackbar = Snackbar.make(view, "All files were synced", Snackbar.LENGTH_SHORT);
-                snackbar.setBackgroundTint(ContextCompat.getColor(SimpleSyncGoogleDriveToLocalActivity.this, R.color.green));
-                snackbar.show();
+                showSnackbarGreen(view, "All files were synced");
                 listAllFolder();
             }
 
@@ -343,9 +343,7 @@ public class SimpleSyncGoogleDriveToLocalActivity extends AppCompatActivity {
                         }
                     });
                 }
-                Snackbar snackbar = Snackbar.make(view, "All files were synced", Snackbar.LENGTH_SHORT);
-                snackbar.setBackgroundTint(ContextCompat.getColor(SimpleSyncGoogleDriveToLocalActivity.this, R.color.green));
-                snackbar.show();
+                showSnackbarGreen(view, "All files were synced");
                 listAllFolder();
             }
         };

@@ -1,5 +1,8 @@
 package de.androidcrypto.googledriveplayground;
 
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
+import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarRed;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,7 +16,6 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -21,13 +23,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -225,9 +225,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                         // get the passphrase from EditText as char array
                         int passphraseLength = passphraseInput.length();
                         if (passphraseLength < MINIMUM_PASSPHRASE_LENGTH) {
-                            Snackbar snackbar = Snackbar.make(view, "The entered passphrase is too short, aborted", Snackbar.LENGTH_LONG);
-                            snackbar.setBackgroundTint(ContextCompat.getColor(SingleEncryptedUploadLocalToGoogleDriveActivity.this, R.color.red));
-                            snackbar.show();
+                            showSnackbarRed(view, "The entered passphrase is too short, aborted");
                             return;
                         }
                         char[] passphraseChar = new char[passphraseLength];
@@ -386,9 +384,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                     }
                 });
                 //}
-                Snackbar snackbar = Snackbar.make(view, "The file was uploaded", Snackbar.LENGTH_SHORT);
-                snackbar.setBackgroundTint(ContextCompat.getColor(SingleEncryptedUploadLocalToGoogleDriveActivity.this, R.color.green));
-                snackbar.show();
+                showSnackbarGreen(view, "The file was uploaded");
                 listAllFolder();
             }
         };
