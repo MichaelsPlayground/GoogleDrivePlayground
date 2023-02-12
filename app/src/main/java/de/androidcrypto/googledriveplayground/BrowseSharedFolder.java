@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,12 +17,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class BrowseSharedFolder extends AppCompatActivity implements Serializable {
-    Button listFolder;
+
+    private String TAG = "BrowseSharedFolder";
+
+    //Button listFolder;
     ListView listViewFolder;
 
     private String[] folderList;
 
     Intent startListFileActivityIntent;
+    private String returnToActivityFromIntent = "";
+    // could be SelectEncryptedFoldersActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +35,15 @@ public class BrowseSharedFolder extends AppCompatActivity implements Serializabl
         setContentView(R.layout.activity_browse_shared_folder);
 
         listViewFolder = findViewById(R.id.lvBrowseFolder);
+
+        /**
+         * section for incoming intent handling
+         */
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            //System.out.println("extras not null");
+            returnToActivityFromIntent = (String) getIntent().getSerializableExtra("returnToActivity");
+        }
 
         listFolder();
     }
@@ -55,6 +70,16 @@ public class BrowseSharedFolder extends AppCompatActivity implements Serializabl
                 Bundle bundle = new Bundle();
                 bundle.putString("selectedFolder", selectedItem);
                 bundle.putString("parentFolder", "root");
+                if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                    Log.i(TAG, "set returnToActivity to: " + returnToActivityFromIntent);
+                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                }
+                else {
+                    Log.i(TAG, "set returnToActivity to: " + "");
+                    bundle.putString("returnToActivity", "");
+                }
+                Log.i(TAG, "selectFolder, returnToActivity IN BUNDLE is " + bundle.getSerializable("returnToActivity"));
+                Log.i(TAG, "selectFolder and returnToActivity: " + returnToActivityFromIntent);
                 startListFileActivityIntent = new Intent(BrowseSharedFolder.this, ListSharedFolder.class);
                 startListFileActivityIntent.putExtras(bundle);
                 startActivity(startListFileActivityIntent);

@@ -32,6 +32,7 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
     String selectedFolderForIntent, parentFolderForIntent;
 
     Intent startMainActivityIntent, startListFolderActivityIntent;
+    private String returnToActivityFromIntent = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,12 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
             String parentFolder = "";
             folder = (String) getIntent().getSerializableExtra("selectedFolder");
             parentFolder = (String) getIntent().getSerializableExtra("parentFolder");
+            returnToActivityFromIntent = (String) getIntent().getSerializableExtra("returnToActivity");
+            if (returnToActivityFromIntent != null) {
+                Log.i(TAG, "returnToActivity: " + returnToActivityFromIntent);
+            } else {
+                Log.i(TAG, "returnToActivity: is NULL");
+            }
             if (parentFolder != null) {
                 Log.i(TAG, "parent folder: " + parentFolder);
                 parentFolderForIntent = parentFolder;
@@ -81,7 +88,17 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
                 bundle.putString("IntentType", "selectSharedFolder");
                 bundle.putString("browsedFolder", selectedFolderForIntent);
                 bundle.putString("parentFolder", parentFolderForIntent);
-                startMainActivityIntent = new Intent(ListSharedFolder.this, MainActivity.class);
+                if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                }
+                else {
+                    bundle.putString("returnToActivity", "");
+                }
+                if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                    startMainActivityIntent = new Intent(ListSharedFolder.this, SelectEncryptedFoldersActivity.class);
+                } else {
+                    startMainActivityIntent = new Intent(ListSharedFolder.this, MainActivity.class);
+                }
                 startMainActivityIntent.putExtras(bundle);
                 // jumps back
                 startActivity(startMainActivityIntent);
@@ -118,6 +135,12 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
                 Bundle bundle = new Bundle();
                 bundle.putString("selectedFolder", selectedItem);
                 bundle.putString("parentFolder", parentFolderForIntent +  "/" + startDirectory);
+                if (returnToActivityFromIntent.equals("returnToActivity")) {
+                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                }
+                else {
+                    bundle.putString("returnToActivity", "");
+                }
                 // we are starting a new ListFolder activity
                 startListFolderActivityIntent = new Intent(ListSharedFolder.this, ListSharedFolder.class);
                 startListFolderActivityIntent.putExtras(bundle);
