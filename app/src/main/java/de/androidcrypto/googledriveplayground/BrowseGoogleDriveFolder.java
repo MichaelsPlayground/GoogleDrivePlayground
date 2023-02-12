@@ -49,12 +49,24 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
 
     private Drive googleDriveServiceOwn = null;
 
+    private String returnToActivityFromIntent = "";
+    // could be SelectEncryptedFoldersActivity
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_browse_google_drive_folder);
 
         listViewFolder = findViewById(R.id.lvBrowseGoogleDriveFolder);
+
+        /**
+         * section for incoming intent handling
+         */
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            //System.out.println("extras not null");
+            returnToActivityFromIntent = (String) getIntent().getSerializableExtra("returnToActivity");
+        }
 
         requestSignIn();
 
@@ -203,6 +215,16 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                                 Bundle bundle = new Bundle();
                                 bundle.putString("googleDriveFolderId", selectedItemId);
                                 bundle.putString("googleDriveFolderName", selectedItemName);
+                                if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                                    Log.i(TAG, "set returnToActivity to: " + returnToActivityFromIntent);
+                                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                                }
+                                else {
+                                    Log.i(TAG, "set returnToActivity to: " + "");
+                                    bundle.putString("returnToActivity", "");
+                                }
+                                Log.i(TAG, "selectFolder, returnToActivity IN BUNDLE is " + bundle.getSerializable("returnToActivity"));
+                                Log.i(TAG, "selectFolder and returnToActivity: " + returnToActivityFromIntent);
                                 startListFolderActivityIntent = new Intent(BrowseGoogleDriveFolder.this, ListGoogleDriveFolder.class);
                                 startListFolderActivityIntent.putExtras(bundle);
                                 startActivity(startListFolderActivityIntent);

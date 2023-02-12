@@ -85,13 +85,15 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
             public void onClick(View view) {
                 Log.i(TAG, "selectFolder");
                 Bundle bundle = new Bundle();
-                bundle.putString("IntentType", "selectSharedFolder");
+                //bundle.putString("IntentType", "selectSharedFolder");
                 bundle.putString("browsedFolder", selectedFolderForIntent);
                 bundle.putString("parentFolder", parentFolderForIntent);
                 if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                    bundle.putString("IntentType", "selectEncryptedSharedFolder");
                     bundle.putString("returnToActivity", returnToActivityFromIntent);
                 }
                 else {
+                    bundle.putString("IntentType", "selectSharedFolder");
                     bundle.putString("returnToActivity", "");
                 }
                 if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {

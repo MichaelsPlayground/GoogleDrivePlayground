@@ -92,4 +92,10 @@
         android:layout_height="wrap_content"
         android:text="select folder for encrypted content (Google Drive)" />
 
+    <Button
+        android:id="@+id/btnSelectEncryptedFoldersReturnToMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="return to main menu" />
+
 </LinearLayout>

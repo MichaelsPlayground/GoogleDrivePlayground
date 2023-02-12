@@ -21,7 +21,7 @@ public class SelectEncryptedFoldersActivity extends AppCompatActivity {
     com.google.android.material.textfield.TextInputEditText folderNameLocal;
     com.google.android.material.textfield.TextInputEditText folderNameGoogleDrive;
 
-    Button selectLocalFolder, selectGoogleDriveFolder;
+    Button selectLocalFolder, selectGoogleDriveFolder, returnToMainActivity;
 
     private String storedFolderNameLocal, storedFolderPathLocal;
     private String storedGdFolderName, storedGdFolderId;
@@ -41,6 +41,7 @@ public class SelectEncryptedFoldersActivity extends AppCompatActivity {
         folderNameGoogleDrive = findViewById(R.id.etSelectEncryptedFoldersGoogleDriveName);
         selectLocalFolder = findViewById(R.id.btnSelectEncryptedFoldersLocal);
         selectGoogleDriveFolder = findViewById(R.id.btnSelectEncryptedFoldersGoogleDrive);
+        returnToMainActivity = findViewById(R.id.btnSelectEncryptedFoldersReturnToMain);
 
         // init the StorageUtils
         context = getApplicationContext();
@@ -72,8 +73,8 @@ public class SelectEncryptedFoldersActivity extends AppCompatActivity {
 
             // check first for IntentType
             String intentType = (String) getIntent().getSerializableExtra("IntentType");
-            if (intentType.equals("selectSharedFolder")) {
-                Log.i(TAG, "receive intent data for selectSharedFolder");
+            if (intentType.equals("selectEncryptedSharedFolder")) {
+                Log.i(TAG, "receive intent data for selectEncryptedSharedFolder");
                 selectedFolderLocalFromIntent = (String) getIntent().getSerializableExtra("browsedFolder");
                 parentFolderLocalFromIntent = (String) getIntent().getSerializableExtra("parentFolder");
                 if (parentFolderLocalFromIntent == null) {
@@ -90,14 +91,12 @@ public class SelectEncryptedFoldersActivity extends AppCompatActivity {
                 Log.i(TAG, "resultString: " + resultString);
                 storeTheLocalSelectedFolder();
             }
-            if (intentType.equals("selectGoogleDriveFolder")) {
-                Log.i(TAG, "receive intent data for selectGoogleDriveFolder");
+            if (intentType.equals("selectEncryptedGoogleDriveFolder")) {
+                Log.i(TAG, "receive intent data for selectEncryptedGoogleDriveFolder");
                 googleDriveFolderIdFromIntent = (String) getIntent().getSerializableExtra("googleDriveFolderId");
                 googleDriveFolderNameFromIntent = (String) getIntent().getSerializableExtra("googleDriveFolderName");
-                String folderSelectionString = "you selected the folder " +
-                        googleDriveFolderNameFromIntent +
-                        "\nwith the ID " +
-                        googleDriveFolderIdFromIntent;
+                String folderSelectionString = "selectedFolder: " +
+                        googleDriveFolderNameFromIntent;
                 folderNameGoogleDrive.setText(folderSelectionString);
                 String resultString = "selectedFolder: " + googleDriveFolderNameFromIntent + "\n"
                         + "folderId: " + googleDriveFolderIdFromIntent;
@@ -124,7 +123,21 @@ public class SelectEncryptedFoldersActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "selectGoogleDriveLocalFolder encrypted");
-                // todo fill with live, append BrowseGoogleDriveFolder + ListGoogleDriveFolder
+                Intent intent = new Intent(SelectEncryptedFoldersActivity.this, BrowseGoogleDriveFolder.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("returnToActivity", "SelectEncryptedFoldersActivity");
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
+
+        returnToMainActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "return to main menu");
+                Intent intent = new Intent(SelectEncryptedFoldersActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
     }

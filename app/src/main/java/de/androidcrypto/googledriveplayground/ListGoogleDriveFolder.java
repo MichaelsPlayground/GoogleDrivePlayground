@@ -48,6 +48,7 @@ public class ListGoogleDriveFolder extends AppCompatActivity implements Serializ
     private String selectedFolderForIntent, parentFolderForIntent;
 
     private Intent startMainActivityIntent, startListFolderActivityIntent;
+    private String returnToActivityFromIntent = "";
 
     private static final int REQUEST_CODE_SIGN_IN = 1;
 
@@ -71,7 +72,12 @@ public class ListGoogleDriveFolder extends AppCompatActivity implements Serializ
             System.out.println("extras not null");
             googleDriveFolderId = (String) getIntent().getSerializableExtra("googleDriveFolderId");
             googleDriveFolderName = (String) getIntent().getSerializableExtra("googleDriveFolderName");
-
+            returnToActivityFromIntent = (String) getIntent().getSerializableExtra("returnToActivity");
+            if (returnToActivityFromIntent != null) {
+                Log.i(TAG, "returnToActivity: " + returnToActivityFromIntent);
+            } else {
+                Log.i(TAG, "returnToActivity: is NULL");
+            }
             if (googleDriveFolderId != null) {
                 Log.i(TAG, "googleDriveFolderId: " + googleDriveFolderId);
                 //parentFolderForIntent = parentFolder;
@@ -97,10 +103,26 @@ public class ListGoogleDriveFolder extends AppCompatActivity implements Serializ
             public void onClick(View view) {
                 Log.i(TAG, "selectFolder");
                 Bundle bundle = new Bundle();
-                bundle.putString("IntentType", "selectGoogleDriveFolder");
+                //bundle.putString("IntentType", "selectGoogleDriveFolder");
                 bundle.putString("googleDriveFolderId", googleDriveFolderId);
                 bundle.putString("googleDriveFolderName", googleDriveFolderName);
-                startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, MainActivity.class);
+
+                if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                    Log.i(TAG, "IntentType: selectEncryptedGoogleDriveFolder");
+                    bundle.putString("IntentType", "selectEncryptedGoogleDriveFolder");
+                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                }
+                else {
+                    Log.i(TAG, "IntentType: selectGoogleDriveFolder");
+                    bundle.putString("IntentType", "selectGoogleDriveFolder");
+                    bundle.putString("returnToActivity", "");
+                }
+                if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                    startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, SelectEncryptedFoldersActivity.class);
+                } else {
+                    startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, MainActivity.class);
+                }
+                //startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, MainActivity.class);
                 startMainActivityIntent.putExtras(bundle);
                 // jumps back
                 startActivity(startMainActivityIntent);

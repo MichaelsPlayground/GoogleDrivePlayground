@@ -109,10 +109,11 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
 
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
-        localFolderName = storageUtils.getLocalStorageName();
-        localFolderPath = storageUtils.getLocalStoragePath();
-        googleDriveFolderName = storageUtils.getGoogleDriveStorageName();
-        googleDriveFolderId = storageUtils.getGoogleDriveStorageId();
+        // here we are loading the credentials for ENCRYPTED files
+        localFolderName = storageUtils.getLocalStorageNameEncrypted();
+        localFolderPath = storageUtils.getLocalStoragePathEncrypted();
+        googleDriveFolderName = storageUtils.getGoogleDriveStorageNameEncrypted();
+        googleDriveFolderId = storageUtils.getGoogleDriveStorageIdEncrypted();
 
         // sign in to GoogleDrive
         requestSignIn();
