@@ -22,6 +22,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -509,6 +510,19 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
         return deletionResult;
     }
 
+    /**
+     * this method is deleting the file used for encryption and decryption
+     * @return TRUE if file could get deleted and FALSE if not
+     */
+    private boolean deleteFileInInternalStorage(@NonNull String fileName) {
+        Log.i(TAG, "deleteFileInInternalStorage: " + fileName);
+        boolean deletionResult = false;
+        File file = new File(getApplicationContext().getFilesDir(), fileName);
+        if (file.exists()) {
+            deletionResult = file.delete();
+        }
+        return deletionResult;
+    }
 
     private void deleteEncryptedGoogleDriveFile(View view, String fileToDeleteId, String fileNameToUpload, char[] passphraseChar) {
         Log.i(TAG, "deleteGoogleDriveFile id: " + fileToDeleteId);

@@ -295,6 +295,8 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                         Log.i(TAG, "the decryption was successful");
                     }
 
+                    // delete the temp file in internal storage
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
