@@ -193,6 +193,12 @@
                 android:text="select Google Drive folder" />
 
             <Button
+                android:id="@+id/btnMainSelectEncryptedFolders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="select encrypted content folders" />
+
+            <Button
                 android:id="@+id/btnMainStartSimpleSyncLocalToGoogleDrive"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

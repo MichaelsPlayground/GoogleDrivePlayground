@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     Button basicDownloadToInternalStorage;
     Button basicListFiles, basicListFolder, basicListFilesInFolder;
     Button basicCreateFolder, basicUploadFromInternalStorageToSubfolder;
-    Button selectLocalFolder, selectGoogleDriveFolder;
+    Button selectLocalFolder, selectGoogleDriveFolder, selectEncryptedFolders;
     Button syncLocalToGoogleDrive, syncGoogleDriveToLocal;
     Button uploadLocalToGoogleDrive, downloadGoogleDriveToLocal;
     Button uploadEncryptedLocalToGoogleDrive, downloadEncryptedGoogleDriveToLocal;
@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         basicUploadFromInternalStorageToSubfolder = findViewById(R.id.btnMainBasicUploadFileSubfolder);
         selectLocalFolder = findViewById(R.id.btnMainSelectLocalFolder);
         selectGoogleDriveFolder = findViewById(R.id.btnMainSelectGoogleDriveFolder);
+        selectEncryptedFolders = findViewById(R.id.btnMainSelectEncryptedFolders);
         syncLocalToGoogleDrive = findViewById(R.id.btnMainStartSimpleSyncLocalToGoogleDrive);
         syncGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleSyncGoogleDriveToLocal);
         uploadLocalToGoogleDrive = findViewById(R.id.btnMainStartSingleUploadLocalToGoogleDrive);
@@ -303,6 +304,34 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, BrowseGoogleDriveFolder.class);
                 intent.putExtras(bundle);
                 startActivity(intent);
+                //finish();
+            }
+        });
+
+        /**
+         * The BrowseGoogleDriveFolder class will show all folders in the root of Google Drive.
+         * When selecting a folder the name is passed to ListGoogleDriveFolder where the user
+         * can select this folder or browse to a subfolder (if available).
+         * The selected folder is returned to MainActivity using an Intent Bundle
+         */
+        selectEncryptedFolders.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "selectEncryptedFolders");
+                if (!checkLoginStatus()) {
+                    Log.e(TAG, "please sign in before list folder");
+                    return;
+                }
+
+                Intent intent = new Intent(MainActivity.this, SelectEncryptedFoldersActivity.class);
+                startActivity(intent);
+                /*
+                Bundle bundle = new Bundle();
+                bundle.putString("googleIdToken", googleIdToken);
+                Intent intent = new Intent(MainActivity.this, BrowseGoogleDriveFolder.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
+                 */
                 //finish();
             }
         });

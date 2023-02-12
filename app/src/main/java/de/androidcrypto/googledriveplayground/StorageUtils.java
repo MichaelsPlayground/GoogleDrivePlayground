@@ -39,6 +39,11 @@ public class StorageUtils {
     private final String GOOGLE_DRIVE_STORAGE_ID = "google_drive_id";
     private final String GOOGLE_DRIVE_STORAGE_NAME = "google_drive_name";
 
+    // credentials for encrypted content
+    private final String LOCAL_STORAGE_PATH_ENCRYPTED = "local_path_encrypted";
+    private final String LOCAL_STORAGE_NAME_ENCRYPTED = "local_name_encrypted";
+    private final String GOOGLE_DRIVE_STORAGE_ID_ENCRYPTED = "google_drive_id_encrypted";
+    private final String GOOGLE_DRIVE_STORAGE_NAME_ENCRYPTED = "google_drive_name_encrypted";
 
     /*
     private final String ENCRYPTED_PREFERENCES_FILENAME = "secret_shared_prefs";
@@ -203,6 +208,131 @@ public class StorageUtils {
     public String getGoogleDriveStorageName() {
         return sharedPreferences.getString(GOOGLE_DRIVE_STORAGE_NAME, "");
     }
+
+    /**
+     * local storage path & name (encrypted)
+     */
+
+    public boolean isLocalStoragePathEncryptedAvailable() {
+        if (TextUtils.isEmpty(getLocalStoragePathEncrypted())) {
+            Log.d(TAG, "local storage path Encrypted is not available");
+            return false;
+        } else {
+            Log.d(TAG, "local storage path Encrypted is available");
+            return true;
+        }
+    }
+
+    public boolean setLocalStoragePathEncrypted(String path) {
+        if (TextUtils.isEmpty(path)) {
+            Log.e(TAG, "local storage path Encrypted is empty, storage aborted");
+            return false;
+        }
+        try {
+            sharedPreferences.edit().putString(LOCAL_STORAGE_PATH_ENCRYPTED, path).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error on path storage: " + e.getMessage());
+            return false;
+        }
+        Log.d(TAG, "local storage path Encrypted successful stored");
+        return true;
+    }
+
+    public String getLocalStoragePathEncrypted() {
+        return sharedPreferences.getString(LOCAL_STORAGE_PATH_ENCRYPTED, "");
+    }
+
+    public boolean isLocalStorageNameEncryptedAvailable() {
+        if (TextUtils.isEmpty(getLocalStorageNameEncrypted())) {
+            Log.d(TAG, "local storage name Encrypted is not available");
+            return false;
+        } else {
+            Log.d(TAG, "local storage name Encrypted is available");
+            return true;
+        }
+    }
+
+    public boolean setLocalStorageNameEncrypted(String name) {
+        if (TextUtils.isEmpty(name)) {
+            Log.e(TAG, "local storage name Encrypted is empty, storage aborted");
+            return false;
+        }
+        try {
+            sharedPreferences.edit().putString(LOCAL_STORAGE_NAME_ENCRYPTED, name).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error on name storage: " + e.getMessage());
+            return false;
+        }
+        Log.d(TAG, "local storage name Encrypted successful stored");
+        return true;
+    }
+
+    public String getLocalStorageNameEncrypted() {
+        return sharedPreferences.getString(LOCAL_STORAGE_NAME_ENCRYPTED, "");
+    }
+
+    /**
+     * Google Drive storage path & name (Encrypted)
+     */
+
+    public boolean isGoogleDriveStorageIdEncryptedAvailable() {
+        if (TextUtils.isEmpty(getGoogleDriveStorageIdEncrypted())) {
+            Log.d(TAG, "Google Drive storage id Encrypted is not available");
+            return false;
+        } else {
+            Log.d(TAG, "Google Drive storage id Encrypted is available");
+            return true;
+        }
+    }
+
+    public boolean setGoogleDriveStorageIdEncrypted(String id) {
+        if (TextUtils.isEmpty(id)) {
+            Log.e(TAG, "Google Drive storage id Encrypted is empty, storage aborted");
+            return false;
+        }
+        try {
+            sharedPreferences.edit().putString(GOOGLE_DRIVE_STORAGE_ID_ENCRYPTED, id).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error on id storage: " + e.getMessage());
+            return false;
+        }
+        Log.d(TAG, "Google Drive storage id Encrypted successful stored");
+        return true;
+    }
+
+    public String getGoogleDriveStorageIdEncrypted() {
+        return sharedPreferences.getString(GOOGLE_DRIVE_STORAGE_ID_ENCRYPTED, "");
+    }
+
+    public boolean isGoogleDriveStorageNameEncryptedAvailable() {
+        if (TextUtils.isEmpty(getGoogleDriveStorageNameEncrypted())) {
+            Log.d(TAG, "Google Drive storage name Encrypted is not available");
+            return false;
+        } else {
+            Log.d(TAG, "Google Drive storage name Encrypted is available");
+            return true;
+        }
+    }
+
+    public boolean setGoogleDriveStorageNameEncrypted(String name) {
+        if (TextUtils.isEmpty(name)) {
+            Log.e(TAG, "Google Drive storage name Encrypted is empty, storage aborted");
+            return false;
+        }
+        try {
+            sharedPreferences.edit().putString(GOOGLE_DRIVE_STORAGE_NAME_ENCRYPTED, name).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error on name storage: " + e.getMessage());
+            return false;
+        }
+        Log.d(TAG, "Google Drive storage name Encrypted successful stored");
+        return true;
+    }
+
+    public String getGoogleDriveStorageNameEncrypted() {
+        return sharedPreferences.getString(GOOGLE_DRIVE_STORAGE_NAME_ENCRYPTED, "");
+    }
+
 
     /**
      * developer key utils
