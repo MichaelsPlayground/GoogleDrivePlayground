@@ -124,7 +124,7 @@ public class SelectEncryptedFoldersActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.i(TAG, "selectGoogleDriveLocalFolder encrypted");
-
+                // todo fill with live, append BrowseGoogleDriveFolder + ListGoogleDriveFolder
             }
         });
     }
