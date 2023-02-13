@@ -429,78 +429,6 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
         DoBasicUploadSubfolder.start();
     }
 
-    private void uploadFileToGoogleDriveSubfolder(String filenameToUpload) {
-        Log.i(TAG, "Basic upload from internal storage to subfolder");
-        /*
-        if (!checkLoginStatus()) {
-            Log.e(TAG, "please sign in before upload a file");
-            return;
-        }
-
-         */
-        // https://developers.google.com/drive/api/guides/manage-uploads
-        Thread DoBasicUploadSubfolder = new Thread() {
-            public void run() {
-                Log.i(TAG, "running Thread DoBasicUploadSubfolder");
-
-                //String filename = "txtfile1.txt";
-                String filename = filenameToUpload;
-                String folderName = "test";
-                //String folderId = getFolderId(folderName);
-                String folderId = googleDriveFolderId;
-                if (folderId.equals("")) {
-                    Log.e(TAG, "The destination folder does not exist, abort: " + filename);
-                    return;
-                } else {
-                    Log.i(TAG, "The destination folder is existing, start uploading to folderId: " + folderId);
-                }
-
-                com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
-                //fileMetadata.setName("photo.jpg");
-                fileMetadata.setName(filename);
-                fileMetadata.setParents(Collections.singletonList(folderId));
-                // File's content.
-                String recursiveFolder = localFolderPath.replaceFirst("root", "");
-                java.io.File externalStorageDir = new File(Environment.getExternalStoragePublicDirectory("")
-                        , recursiveFolder);
-                java.io.File filePath = new java.io.File(externalStorageDir, filename);
-                if (filePath.exists()) {
-                    Log.i(TAG, "filePath " + filename + " is existing");
-                } else {
-                    Log.e(TAG, "filePath " + filename + " is NOT existing");
-                    return;
-                }
-
-                // get media type
-                Uri uri = Uri.fromFile(filePath);
-                String mimeType = getMimeType(uri);
-                System.out.println("* uri: " + uri);
-                System.out.println("* mimeType: " + mimeType);
-
-                FileContent mediaContent = new FileContent(mimeType, filePath);
-                try {
-                    com.google.api.services.drive.model.File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
-                            .setFields("id, parents")
-                            .execute();
-                    //System.out.println("File ID: " + file.getId());
-                    Log.i(TAG, "The file was saved with fileId: " + file.getId());
-                    Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
-                    //return file.getId();
-                } catch (GoogleJsonResponseException e) {
-                    // TODO(developer) - handle error appropriately
-                    //System.err.println("Unable to upload file: " + e.getDetails());
-                    //throw e;
-                    Log.e(TAG, "ERROR: " + e.getDetails());
-                } catch (IOException e) {
-                    //throw new RuntimeException(e);
-                    Log.e(TAG, "IOException: " + e.getMessage());
-                }
-                // todo give a message and rerun the syncList
-            }
-        };
-        DoBasicUploadSubfolder.start();
-    }
-
     public String getMimeType(Uri uri) {
         String mimeType = null;
         if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
@@ -543,9 +471,7 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 listFiles.setAdapter(adapter);
             }
         });
-
     }
-
 
     private void listGoogleDriveFiles() {
         Log.i(TAG, "listGoogleDriveFiles");

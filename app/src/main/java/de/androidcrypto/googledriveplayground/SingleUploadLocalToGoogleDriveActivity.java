@@ -54,7 +54,7 @@ public class SingleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
     RadioButton showUpload, showLocal, showGoogle;
     Button startUpload;
     ProgressBar progressBar;
-    TextView tvProgress, tvProgressAbsolute;
+    TextView header, tvProgress, tvProgressAbsolute;
     private Handler handler = new Handler();
     ListView listFiles;
     // default values
@@ -78,6 +78,7 @@ public class SingleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_upload_local_to_google_drive);
 
+        header = findViewById(R.id.tvSingleUploadToGoogleHeader);
         showUpload = findViewById(R.id.rbSimpleUploadToGoogleUpload);
         showLocal = findViewById(R.id.rbSimpleUploadToGoogleSyncLocal);
         showGoogle = findViewById(R.id.rbSimpleUploadToGoogleSyncGoogle);
@@ -93,6 +94,15 @@ public class SingleUploadLocalToGoogleDriveActivity extends AppCompatActivity {
         localFolderPath = storageUtils.getLocalStoragePath();
         googleDriveFolderName = storageUtils.getGoogleDriveStorageName();
         googleDriveFolderId = storageUtils.getGoogleDriveStorageId();
+
+        // todo rename id's from Simple to Single in xml
+        // todo rename button to Return to Main menu and function !
+        // todo remove RadioButton upload
+
+        String headerString = "Unencrypted single file upload from a local folder (" +
+                localFolderName + ") to a Google Drive folder (" +
+                googleDriveFolderName + ")";
+        header.setText(headerString);
 
         // sign in to GoogleDrive
         requestSignIn();

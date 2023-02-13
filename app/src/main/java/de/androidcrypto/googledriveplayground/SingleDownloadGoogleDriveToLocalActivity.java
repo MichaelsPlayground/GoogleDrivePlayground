@@ -58,7 +58,7 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
     RadioButton showUpload, showLocal, showGoogle;
     Button startUpload;
     ProgressBar progressBar;
-    TextView tvProgress, tvProgressAbsolute;
+    TextView header, tvProgress, tvProgressAbsolute;
     private Handler handler = new Handler();
     ListView listFiles;
     // default values
@@ -82,6 +82,7 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_download_google_drive_to_local);
 
+        header = findViewById(R.id.tvSingleDownloadToLocalHeader);
         showUpload = findViewById(R.id.rbSimpleDownloadGoogleUpload);
         showLocal = findViewById(R.id.rbSimpleDownloadGoogleLocal);
         showGoogle = findViewById(R.id.rbSimpleDownloadGoogleGoogle);
@@ -91,12 +92,21 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
         tvProgress = findViewById(R.id.tvSimpleDownloadGoogleProgress);
         tvProgressAbsolute = findViewById(R.id.tvSimpleDownloadGoogleProgressAbsolute);
 
+        // todo rename id's from Simple to Single in xml
+        // todo rename button to Return to Main menu and function !
+        // todo remove RadioButton upload
+
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
         localFolderName = storageUtils.getLocalStorageName();
         localFolderPath = storageUtils.getLocalStoragePath();
         googleDriveFolderName = storageUtils.getGoogleDriveStorageName();
         googleDriveFolderId = storageUtils.getGoogleDriveStorageId();
+
+        String headerString = "Unencrypted single file download from a Google Drive folder (" +
+                googleDriveFolderName + ") to a local folder (" +
+                localFolderName + ")";
+        header.setText(headerString);
 
         // sign in to GoogleDrive
         requestSignIn();
@@ -189,7 +199,6 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
 
         // compare both lists in listGoogleDriveFiles
     }
-
 
     private void showFiles(ArrayList<String> fileNames, boolean isLocalFolder) {
         Log.i(TAG, "showFiles");

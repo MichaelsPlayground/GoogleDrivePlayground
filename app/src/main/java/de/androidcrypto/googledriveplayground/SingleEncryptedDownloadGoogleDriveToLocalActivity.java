@@ -1,20 +1,17 @@
 package de.androidcrypto.googledriveplayground;
 
+import static de.androidcrypto.googledriveplayground.CryptographyUtils.decryptFileFromInternalStorageToExternalStorage;
 import static de.androidcrypto.googledriveplayground.CryptographyUtils.deleteFileInInternalStorage;
 import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
 import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarRed;
 
-import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -41,26 +38,12 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.FileList;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompatActivity {
 
@@ -141,21 +124,6 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
         });
 
     }
-
-    public String getMimeType(Uri uri) {
-        String mimeType = null;
-        if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-            ContentResolver cr = getApplicationContext().getContentResolver();
-            mimeType = cr.getType(uri);
-        } else {
-            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri
-                    .toString());
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    fileExtension.toLowerCase());
-        }
-        return mimeType;
-    }
-
 
     /**
      * step 1: listAllFolders gets all files in the local and GoogleDrive folder ist an ArrayList
@@ -298,53 +266,6 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
 
         };
         DoEncryptedDownloadSubfolder.start();
-    }
-
-    private File decryptFileFromInternalStorageToExternalStorage(File filePathToSave, File encryptedFilePath, char[] passphraseChar) {
-        Log.i(TAG, "decryptInternalStorageFileToExternalStorage");
-        Log.i(TAG, "encryptedFilePath: " + encryptedFilePath.getAbsolutePath());
-        Log.i(TAG, "filePathToSave: " + filePathToSave.getAbsolutePath() + " passphraseChar: " + passphraseChar.toString());
-        String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
-        String AES_ALGORITHM = "AES/GCM/NOPadding";
-        int ITERATIONS = 10000;
-        int BUFFER_SIZE = 8096;
-        //String tempFilename = "temp.dat";
-        Cipher cipher;
-        try {
-            byte[] salt = new byte[32];
-            byte[] nonce = new byte[12];
-            cipher = Cipher.getInstance(AES_ALGORITHM);
-            try (//FileInputStream in = getApplicationContext().openFileInput(tempFilename); // i don't care about the path as all is local
-                 FileInputStream in = new FileInputStream(encryptedFilePath);
-                 CipherInputStream cipherInputStream = new CipherInputStream(in, cipher);
-                 FileOutputStream out = new FileOutputStream(filePathToSave)) // i don't care about the path as all is local
-            {
-                byte[] buffer = new byte[BUFFER_SIZE];
-                in.read(nonce);
-                in.read(salt);
-                SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
-                KeySpec keySpec = new PBEKeySpec(passphraseChar, salt, ITERATIONS, 32 * 8);
-                byte[] key = secretKeyFactory.generateSecret(keySpec).getEncoded();
-                SecretKeySpec secretKeySpec = new SecretKeySpec(key, "AES");
-                GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(16 * 8, nonce);
-                cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, gcmParameterSpec);
-                int nread;
-                while ((nread = cipherInputStream.read(buffer)) > 0) {
-                    out.write(buffer, 0, nread);
-                }
-                out.flush();
-            } catch (IOException | InvalidAlgorithmParameterException | InvalidKeySpecException |
-                     InvalidKeyException e) {
-                Log.e(TAG, "ERROR on encryption: " + e.getMessage());
-                return null;
-                //throw new RuntimeException(e);
-            }
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {
-            Log.e(TAG, "ERROR on encryption: " + e.getMessage());
-            return null;
-            //throw new RuntimeException(e);
-        }
-        return filePathToSave;
     }
 
     private void listGoogleDriveFiles() {

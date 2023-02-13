@@ -8,7 +8,7 @@
     tools:context=".SingleUploadLocalToGoogleDriveActivity">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tvSingleUploadToGoogleHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
