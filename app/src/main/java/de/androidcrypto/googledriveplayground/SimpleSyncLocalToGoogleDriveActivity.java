@@ -2,6 +2,10 @@ package de.androidcrypto.googledriveplayground;
 
 import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -66,8 +70,6 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
     String localFolderName, localFolderPath;
     String googleDriveFolderName, googleDriveFolderId;
     StorageUtils storageUtils;
-
-    private static final int REQUEST_CODE_SIGN_IN = 1;
 
     private Drive googleDriveServiceOwn = null;
 
@@ -476,17 +478,6 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
             sb.append(content);
             sb.append("--------------------\n");
         }
-        //System.out.println("fileList:\n" + sb.toString());
-        String[] fileList;
-        fileList = googleFileNames.toArray(new String[0]);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, fileList);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                //listFiles.setAdapter(adapter);
-                //fileName.setText(sb.toString());
-            }
-        });
 
     }
 
@@ -532,7 +523,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
      */
 
     /**
-     * Starts a sign-in activity using {@link #REQUEST_CODE_SIGN_IN}.
+     * Starts a sign-in activity
      */
     private void requestSignIn() {
         Log.d(TAG, "Requesting sign-in");
@@ -548,10 +539,7 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                         .build();
 
         GoogleSignInClient client = GoogleSignIn.getClient(this, signInOptions);
-
-        // The result of the sign-in Intent is handled in onActivityResult.
-        // todo handle deprecated startActivityForResult
-        startActivityForResult(client.getSignInIntent(), REQUEST_CODE_SIGN_IN);
+        googleSignInStartActivityIntent.launch(client.getSignInIntent());
     }
 
     /**
@@ -587,20 +575,12 @@ public class SimpleSyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * section onActivityResult
-     * todo handle deprecated startActivityForResult
-     */
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        switch (requestCode) {
-            case REQUEST_CODE_SIGN_IN:
-                if (resultCode == Activity.RESULT_OK && resultData != null) {
-                    handleSignInResult(resultData);
+    ActivityResultLauncher<Intent> googleSignInStartActivityIntent = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    handleSignInResult(result.getData());
                 }
-                break;
-        }
-        super.onActivityResult(requestCode, resultCode, resultData);
-    }
+            });
 }

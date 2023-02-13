@@ -23,6 +23,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -80,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     private View view;
 
     private DriveServiceHelper mDriveServiceHelper;
-    private static final int REQUEST_CODE_SIGN_IN = 1;
+    //private static final int REQUEST_CODE_SIGN_IN = 1;
     //private static final int REQUEST_CODE_PERMISSION = 101;
     private static final int REQUEST_CODE_PERMISSION_BELOW_SDK30 = 102;
 
@@ -813,9 +817,6 @@ public class MainActivity extends AppCompatActivity {
      * section sign-in to Google Drive account
      */
 
-    /**
-     * Starts a sign-in activity using {@link #REQUEST_CODE_SIGN_IN}.
-     */
     private void requestSignIn() {
         Log.d(TAG, "Requesting sign-in");
 
@@ -827,13 +828,7 @@ public class MainActivity extends AppCompatActivity {
                         .requestEmail()
                         .requestScopes(new Scope(DriveScopes.DRIVE))
                         .build();
-/*
-        GoogleSignInOptions signInOptions =
-                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestEmail()
-                        .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
-                        .build();
-*/
+
         GoogleSignInClient client = GoogleSignIn.getClient(this, signInOptions);
         if (client == null) {
             System.out.println("* client is null");
@@ -841,10 +836,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("* client is not null: " + client.toString());
         }
         //googleSignInClientForSignOut = client;
-
-        // The result of the sign-in Intent is handled in onActivityResult.
-        // todo handle deprecated startActivityForResult
-        startActivityForResult(client.getSignInIntent(), REQUEST_CODE_SIGN_IN);
+        googleSignInStartActivityIntent.launch(client.getSignInIntent());
     }
 
     /**
@@ -874,9 +866,7 @@ public class MainActivity extends AppCompatActivity {
                     // The DriveServiceHelper encapsulates all REST API and SAF functionality.
                     // Its instantiation is required before handling any onClick actions.
                     mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
-
                     googleDriveServiceOwn = googleDriveService; // todo
-
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
@@ -884,22 +874,15 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * section onActivityResult
-     * todo handle deprecated startActivityForResult
-     */
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        switch (requestCode) {
-            case REQUEST_CODE_SIGN_IN:
-                if (resultCode == Activity.RESULT_OK && resultData != null) {
-                    handleSignInResult(resultData);
+    ActivityResultLauncher<Intent> googleSignInStartActivityIntent = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    handleSignInResult(result.getData());
                 }
-                break;
-        }
-        super.onActivityResult(requestCode, resultCode, resultData);
-    }
+            });
 
     /**
      * section for storage a selected folder
