@@ -56,7 +56,10 @@ public class SyncGoogleDriveToLocalActivity extends AppCompatActivity {
     RadioButton showSync, showLocal, showGoogle;
     Button startSync;
     ProgressBar progressBar;
-    TextView tvProgress, tvProgressAbsolute;
+    TextView header, tvProgress, tvProgressAbsolute;
+    com.google.android.material.textfield.TextInputLayout passphraseInputLayout;
+    com.google.android.material.textfield.TextInputEditText passphraseInput;
+
     private Handler handler = new Handler();
     ListView listFiles;
     // default values
@@ -81,14 +84,15 @@ public class SyncGoogleDriveToLocalActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sync_google_drive_to_local);
 
-        showSync = findViewById(R.id.rbSyncToGoogleSync);
-        showLocal = findViewById(R.id.rbSyncToGoogleSyncLocal);
-        showGoogle = findViewById(R.id.rbSyncToGoogleSyncGoogle);
-        startSync = findViewById(R.id.btnSyncToGoogleSync);
-        listFiles = findViewById(R.id.lvSyncToGoogle);
-        progressBar = findViewById(R.id.pbSyncToGoogleSyncGoogle);
-        tvProgress = findViewById(R.id.tvSyncToGoogleSyncGoogleProgress);
-        tvProgressAbsolute = findViewById(R.id.tvSyncToGoogleSyncGoogleProgressAbsolute);
+        header = findViewById(R.id.tvSyncToLocalHeader);
+        showSync = findViewById(R.id.rbSyncToLocalSync);
+        showLocal = findViewById(R.id.rbSyncToLocalLocal);
+        showGoogle = findViewById(R.id.rbSyncToLocalGoogle);
+        startSync = findViewById(R.id.btnSyncToLocalSync);
+        listFiles = findViewById(R.id.lvSyncToLocal);
+        progressBar = findViewById(R.id.pbSyncToLocal);
+        tvProgress = findViewById(R.id.tvSyncToLocalProgress);
+        tvProgressAbsolute = findViewById(R.id.tvSyncToLocalProgressAbsolute);
 
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
