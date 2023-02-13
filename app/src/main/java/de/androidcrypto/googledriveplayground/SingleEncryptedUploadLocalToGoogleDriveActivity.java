@@ -331,7 +331,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                 }
                 Log.i(TAG, "The file was encrypted to " + encryptedFilePath.getAbsolutePath());
 
-
+/*
                 // this is just a test for decryption here
                 File filePathDecrypt = new File(externalStorageDir, "t1.pdf");
                 File decryptedFile = decryptFileFromInternalStorageToExternalStorage(filePathDecrypt, passphraseChar);
@@ -340,6 +340,7 @@ public class SingleEncryptedUploadLocalToGoogleDriveActivity extends AppCompatAc
                     return;
                 }
                 Log.i(TAG, "The file was decrypted to " + decryptedFile.getAbsolutePath());
+                */
 
                 //deleteTempFileInInternalStorage();
 

@@ -6,7 +6,6 @@ import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarOrang
 import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarRed;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -40,16 +39,13 @@ import com.google.android.gms.common.api.Scope;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.http.FileContent;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -71,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     Button selectLocalFolder, selectGoogleDriveFolder, selectUnencryptedFolders, selectEncryptedFolders;
     Button syncLocalToGoogleDrive, syncGoogleDriveToLocal;
     Button uploadLocalToGoogleDrive, downloadGoogleDriveToLocal;
+    Button syncEncryptedLocalToGoogleDrive, syncEncryptedGoogleDriveToLocal;
     Button uploadEncryptedLocalToGoogleDrive, downloadEncryptedGoogleDriveToLocal;
 
     Button deleteGoogleDriveFile;
@@ -124,11 +121,13 @@ public class MainActivity extends AppCompatActivity {
         selectGoogleDriveFolder = findViewById(R.id.btnMainSelectGoogleDriveFolder);
         selectUnencryptedFolders = findViewById(R.id.btnMainSelectUnencryptedFolders);
         selectEncryptedFolders = findViewById(R.id.btnMainSelectEncryptedFolders);
-        syncLocalToGoogleDrive = findViewById(R.id.btnMainStartSimpleSyncLocalToGoogleDrive);
-        syncGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleSyncGoogleDriveToLocal);
+        syncLocalToGoogleDrive = findViewById(R.id.btnMainStartSyncLocalToGoogleDrive);
+        syncGoogleDriveToLocal = findViewById(R.id.btnMainStartSyncGoogleDriveToLocal);
         uploadLocalToGoogleDrive = findViewById(R.id.btnMainStartSingleUploadLocalToGoogleDrive);
         downloadGoogleDriveToLocal = findViewById(R.id.btnMainStartSingleDownloadGoogleDriveToLocal);
         deleteGoogleDriveFile = findViewById(R.id.btnMainStartDeleteGoogleDriveFile);
+        syncEncryptedLocalToGoogleDrive = findViewById(R.id.btnMainStartEncryptedSyncLocalToGoogleDrive);
+        syncEncryptedGoogleDriveToLocal = findViewById(R.id.btnMainStartEncryptedSyncGoogleDriveToLocal);
         uploadEncryptedLocalToGoogleDrive = findViewById(R.id.btnMainStartSingleEncryptedUploadLocalToGoogleDrive);
         downloadEncryptedGoogleDriveToLocal = findViewById(R.id.btnMainStartSingleEncryptedDownloadGoogleDriveToLocal);
 
@@ -194,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // todo check internet connection state
 
-                Intent intent = new Intent(MainActivity.this, SimpleSyncLocalToGoogleDriveActivity.class);
+                Intent intent = new Intent(MainActivity.this, SyncLocalToGoogleDriveActivity.class);
                 startActivity(intent);
                 //finish();
             }
@@ -212,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // todo check internet connection state
 
-                Intent intent = new Intent(MainActivity.this, SimpleSyncGoogleDriveToLocalActivity.class);
+                Intent intent = new Intent(MainActivity.this, SyncGoogleDriveToLocalActivity.class);
                 startActivity(intent);
                 //finish();
             }
@@ -249,6 +248,45 @@ public class MainActivity extends AppCompatActivity {
                 // todo check internet connection state
 
                 Intent intent = new Intent(MainActivity.this, SingleDownloadGoogleDriveToLocalActivity.class);
+                startActivity(intent);
+                //finish();
+            }
+        });
+
+        syncEncryptedLocalToGoogleDrive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "syncEncryptedLocalToGoogleDriveFolder");
+
+                if (!checkForStoredEncryptedFolders()) {
+                    Log.i(TAG, "local and/or Google Drive Encrypted folder not stored yet, aborted");
+                    return;
+                }
+
+                // todo check internet connection state
+
+                Intent intent = new Intent(MainActivity.this, SyncLocalToGoogleDriveActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("SyncType", "encryptedSync");
+                intent.putExtras(bundle);
+                startActivity(intent);
+                //finish();
+            }
+        });
+
+        syncEncryptedGoogleDriveToLocal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "syncEncryptedGoogleDriveToLocalFolder");
+
+                if (!checkForStoredEncryptedFolders()) {
+                    Log.i(TAG, "local and/or Google Drive Encrypted folder not stored yet, aborted");
+                    return;
+                }
+                // todo check internet connection state
+                // todo THIS IS JUST A COPY
+
+                Intent intent = new Intent(MainActivity.this, SyncGoogleDriveToLocalActivity.class);
                 startActivity(intent);
                 //finish();
             }
@@ -594,6 +632,52 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
+    /**
+     * this method checks that ENCRYPTED local and Google Drive folders are stored
+     * @return TRUE if everything is OK and FALSE if not
+     */
+    private boolean checkForStoredEncryptedFolders() {
+        // check that local and GoogleDrive folders are selected and stored
+        boolean googleDriveFolderStored = checkForStoredEncryptedFolderGoogleDrive();
+        if (!googleDriveFolderStored) {
+            showSnackbarRed(view, "Google Drive Encrypted folder name/ID is not stored yet, aborted");
+            return false;
+        }
+        boolean localFolderStored = checkForStoredEncryptedFolderLocal();
+        if (!localFolderStored) {
+            showSnackbarRed(view, "Local Encrypted folder name/path is not stored yet, aborted");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkForStoredEncryptedFolderLocal() {
+        // check that local folder is selected and stored
+        boolean setLocalName = storageUtils.isLocalStorageNameEncryptedAvailable();
+        boolean setLocalPath = storageUtils.isLocalStoragePathEncryptedAvailable();
+        if (!setLocalName) {
+            return false;
+        }
+        if (!setLocalPath) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkForStoredEncryptedFolderGoogleDrive() {
+        // check that GoogleDrive folder is selected and stored
+        boolean setGdName = storageUtils.isGoogleDriveStorageNameEncryptedAvailable();
+        boolean setGdId = storageUtils.isGoogleDriveStorageIdEncryptedAvailable();
+        if (!setGdName) {
+            return false;
+        }
+        if (!setGdId) {
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * section permission granting

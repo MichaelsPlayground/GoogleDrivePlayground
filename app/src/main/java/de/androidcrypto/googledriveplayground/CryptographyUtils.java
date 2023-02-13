@@ -30,7 +30,7 @@ public class CryptographyUtils {
     private static final String TAG = "CryptographyUtils";
     private static final int MINIMUM_PASSPHRASE_LENGTH = 4;
     private static final int ITERATIONS = 10000;
-    private static final int BUFFER_SIZE = 8096;
+    private static final int BUFFER_SIZE = 8196;
     private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA256";
     private static final String AES_ALGORITHM = "AES/GCM/NOPadding";
 
@@ -152,7 +152,7 @@ public class CryptographyUtils {
      * this method is deleting the file used for encryption and decryption
      * @return TRUE if file could get deleted and FALSE if not
      */
-    private boolean deleteFileInInternalStorage(@NonNull Context context, @NonNull String fileName) {
+    public static boolean deleteFileInInternalStorage(@NonNull Context context, @NonNull String fileName) {
         Log.i(TAG, "deleteFileInInternalStorage: " + fileName);
         boolean deletionResult = false;
         File file = new File(context.getFilesDir(), fileName);

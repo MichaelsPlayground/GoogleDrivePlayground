@@ -166,13 +166,13 @@
                 app:dividerInsetStart="16dp" />
 
             <Button
-                android:id="@+id/btnMainStartSimpleSyncLocalToGoogleDrive"
+                android:id="@+id/btnMainStartSyncLocalToGoogleDrive"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="sync Local to Google Drive" />
 
             <Button
-                android:id="@+id/btnMainStartSimpleSyncGoogleDriveToLocal"
+                android:id="@+id/btnMainStartSyncGoogleDriveToLocal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="sync Google Drive to local" />
@@ -194,6 +194,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="delete a Google Drive file" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerThickness="4dp"
+                app:dividerInsetEnd="16dp"
+                app:dividerInsetStart="16dp" />
+
+            <Button
+                android:id="@+id/btnMainStartEncryptedSyncLocalToGoogleDrive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="sync encrypted Local to Google Drive" />
+
+            <Button
+                android:id="@+id/btnMainStartEncryptedSyncGoogleDriveToLocal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="sync encrypted Google Drive to local" />
 
             <Button
                 android:id="@+id/btnMainStartSingleEncryptedUploadLocalToGoogleDrive"

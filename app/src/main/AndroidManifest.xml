@@ -27,10 +27,10 @@
             android:name=".SelectEncryptedFoldersActivity"
             android:exported="false" />
         <activity
-            android:name=".SimpleSyncLocalToGoogleDriveActivity"
+            android:name=".SyncLocalToGoogleDriveActivity"
             android:exported="false" />
         <activity
-            android:name=".SimpleSyncGoogleDriveToLocalActivity"
+            android:name=".SyncGoogleDriveToLocalActivity"
             android:exported="false" />
         <activity
             android:name=".SingleUploadLocalToGoogleDriveActivity"
