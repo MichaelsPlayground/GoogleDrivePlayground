@@ -284,9 +284,12 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 // todo check internet connection state
-                // todo THIS IS JUST A COPY
 
                 Intent intent = new Intent(MainActivity.this, SyncGoogleDriveToLocalActivity.class);
+                startActivity(intent);
+                Bundle bundle = new Bundle();
+                bundle.putString("SyncType", "encryptedSync");
+                intent.putExtras(bundle);
                 startActivity(intent);
                 //finish();
             }

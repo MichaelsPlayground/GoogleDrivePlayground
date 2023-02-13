@@ -1,5 +1,6 @@
 package de.androidcrypto.googledriveplayground;
 
+import static de.androidcrypto.googledriveplayground.CryptographyUtils.deleteFileInInternalStorage;
 import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
 import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarRed;
 
@@ -243,7 +244,7 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                         , recursiveFolder);
                 File filePath = new File(externalStorageDir, fileNameForDownload);
 
-                //String tempDownloadFilename = "temp.dat";
+                // get the path to internal storage
                 File encryptedFilePath = new File(getFilesDir(), fileNameForDownload);
 
                 OutputStream outputstream = null;
@@ -266,6 +267,7 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
                     }
 
                     // delete the temp file in internal storage
+                    deleteFileInInternalStorage(getApplicationContext(), fileNameForDownload);
 
                     runOnUiThread(new Runnable() {
                         @Override

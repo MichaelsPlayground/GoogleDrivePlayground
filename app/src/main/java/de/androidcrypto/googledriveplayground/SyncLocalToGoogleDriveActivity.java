@@ -182,6 +182,7 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
                 // todo run the upload process, check that syncFileNames list is not empty :-)
                 if (syncFileNames.size() < 1) {
                     Log.i(TAG, "no files to sync, aborted");
+                    // todo remove Snackbar code
                     Snackbar snackbar = Snackbar.make(view, "No files to sync", Snackbar.LENGTH_LONG);
                     snackbar.setBackgroundTint(ContextCompat.getColor(SyncLocalToGoogleDriveActivity.this, R.color.red));
                     snackbar.show();
@@ -201,16 +202,12 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
                     }
                     char[] passphraseChar = new char[passphraseLength];
                     passphraseInput.getText().getChars(0, passphraseLength, passphraseChar, 0);
-
                     uploadEncryptedFileToGoogleDriveSubfolderNew(view, passphraseChar);
 
                 } else {
                     Log.i(TAG, "start unencrypted sync");
                     uploadFileToGoogleDriveSubfolderNew(view);
                 }
-
-
-
             }
         });
     }
@@ -269,7 +266,7 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // here we are encrypting the file from external storage to internal storage / cache and
+                    // here we are encrypting the file from external storage to internal storage and
                     // run the upload from there
                     File encryptedFilePath = encryptExternalStorageFileToInternalStorage(getApplicationContext(), filePath, passphraseChar);
                     if (encryptedFilePath == null) {
