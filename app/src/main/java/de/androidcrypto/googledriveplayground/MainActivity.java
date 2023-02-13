@@ -54,15 +54,17 @@ public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "GD Playground Main";
 
-    Button signIn, signOut, checkSignStatus, queryFiles;
+    Button signIn, signOut, checkSignStatus;
     Button grantStoragePermissions, checkStoragePermissions;
     com.google.android.material.button.MaterialButton storagePermissionsGranted, userIsSignedIn;
-    Button uploadFileFromInternalStorage;
-    Button basicUploadFromInternalStorage;
-    Button basicDownloadToInternalStorage;
-    Button basicListFiles, basicListFolder, basicListFilesInFolder;
-    Button basicCreateFolder, basicUploadFromInternalStorageToSubfolder;
-    Button selectLocalFolder, selectGoogleDriveFolder, selectEncryptedFolders;
+    //Button queryFiles;
+    //Button uploadFileFromInternalStorage;
+    //Button basicUploadFromInternalStorage;
+    //Button basicDownloadToInternalStorage;
+    //Button basicListFiles, basicListFolder, basicListFilesInFolder;
+    Button basicCreateFolder;
+    //Button basicUploadFromInternalStorageToSubfolder;
+    Button selectLocalFolder, selectGoogleDriveFolder, selectUnencryptedFolders, selectEncryptedFolders;
     Button syncLocalToGoogleDrive, syncGoogleDriveToLocal;
     Button uploadLocalToGoogleDrive, downloadGoogleDriveToLocal;
     Button uploadEncryptedLocalToGoogleDrive, downloadEncryptedGoogleDriveToLocal;
@@ -79,12 +81,12 @@ public class MainActivity extends AppCompatActivity {
 
     private DriveServiceHelper mDriveServiceHelper;
     private static final int REQUEST_CODE_SIGN_IN = 1;
-    private static final int REQUEST_CODE_PERMISSION = 101;
+    //private static final int REQUEST_CODE_PERMISSION = 101;
     private static final int REQUEST_CODE_PERMISSION_BELOW_SDK30 = 102;
 
     public Drive googleDriveServiceOwn = null;
     //GoogleSignInClient googleSignInClientForSignOut;
-    String googleIdToken = "";
+    //String googleIdToken = "";
 
 
     @Override
@@ -103,19 +105,20 @@ public class MainActivity extends AppCompatActivity {
         signIn = findViewById(R.id.btnMainSignIn);
         signOut = findViewById(R.id.btnMainSignOut);
         checkSignStatus = findViewById(R.id.btnMainCheckSignStatus);
-        queryFiles = findViewById(R.id.btnMainQueryFiles);
+        //queryFiles = findViewById(R.id.btnMainQueryFiles);
         fileName = findViewById(R.id.etMainFilename);
 
-        uploadFileFromInternalStorage = findViewById(R.id.btnMainUploadFile);
-        basicUploadFromInternalStorage = findViewById(R.id.btnMainBasicUploadFile);
-        basicDownloadToInternalStorage = findViewById(R.id.btnMainBasicDownloadFile);
-        basicListFiles = findViewById(R.id.btnMainBasicListFiles);
-        basicListFolder = findViewById(R.id.btnMainBasicListFolder);
-        basicListFilesInFolder = findViewById(R.id.btnMainBasicListFilesInFolder);
+        //uploadFileFromInternalStorage = findViewById(R.id.btnMainUploadFile);
+        //basicUploadFromInternalStorage = findViewById(R.id.btnMainBasicUploadFile);
+        //basicDownloadToInternalStorage = findViewById(R.id.btnMainBasicDownloadFile);
+        //basicListFiles = findViewById(R.id.btnMainBasicListFiles);
+        //basicListFolder = findViewById(R.id.btnMainBasicListFolder);
+        //basicListFilesInFolder = findViewById(R.id.btnMainBasicListFilesInFolder);
         basicCreateFolder = findViewById(R.id.btnMainBasicCreateFolder);
-        basicUploadFromInternalStorageToSubfolder = findViewById(R.id.btnMainBasicUploadFileSubfolder);
+        //basicUploadFromInternalStorageToSubfolder = findViewById(R.id.btnMainBasicUploadFileSubfolder);
         selectLocalFolder = findViewById(R.id.btnMainSelectLocalFolder);
         selectGoogleDriveFolder = findViewById(R.id.btnMainSelectGoogleDriveFolder);
+        selectUnencryptedFolders = findViewById(R.id.btnMainSelectUnencryptedFolders);
         selectEncryptedFolders = findViewById(R.id.btnMainSelectEncryptedFolders);
         syncLocalToGoogleDrive = findViewById(R.id.btnMainStartSimpleSyncLocalToGoogleDrive);
         syncGoogleDriveToLocal = findViewById(R.id.btnMainStartSimpleSyncGoogleDriveToLocal);
@@ -299,10 +302,10 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "please sign in before list folder");
                     return;
                 }
-                Bundle bundle = new Bundle();
-                bundle.putString("googleIdToken", googleIdToken);
+                //Bundle bundle = new Bundle();
+                //bundle.putString("googleIdToken", googleIdToken);
                 Intent intent = new Intent(MainActivity.this, BrowseGoogleDriveFolder.class);
-                intent.putExtras(bundle);
+                //intent.putExtras(bundle);
                 startActivity(intent);
                 //finish();
             }
@@ -314,6 +317,29 @@ public class MainActivity extends AppCompatActivity {
          * can select this folder or browse to a subfolder (if available).
          * The selected folder is returned to MainActivity using an Intent Bundle
          */
+
+        selectUnencryptedFolders.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "selectUnencryptedFolders");
+                if (!checkLoginStatus()) {
+                    Log.e(TAG, "please sign in before list folder");
+                    return;
+                }
+
+                Intent intent = new Intent(MainActivity.this, SelectUnencryptedFoldersActivity.class);
+                startActivity(intent);
+                /*
+                Bundle bundle = new Bundle();
+                bundle.putString("googleIdToken", googleIdToken);
+                Intent intent = new Intent(MainActivity.this, BrowseGoogleDriveFolder.class);
+                intent.putExtras(bundle);
+                startActivity(intent);
+                 */
+                //finish();
+            }
+        });
+
         selectEncryptedFolders.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -403,389 +429,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
                 DoBasicCreateFolder.start();
-            }
-        });
-
-
-        basicUploadFromInternalStorageToSubfolder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "Basic upload from internal storage to subfolder");
-                if (!checkLoginStatus()) {
-                    Log.e(TAG, "please sign in before upload a file");
-                    return;
-                }
-                // https://developers.google.com/drive/api/guides/manage-uploads
-                Thread DoBasicUploadSubfolder = new Thread() {
-                    public void run() {
-                        Log.i(TAG, "running Thread DoBasicUploadSubfolder");
-                        //do something that return "Calling this from your main thread can lead to deadlock"
-                        // Upload file photo.jpg on drive.
-
-                        // todo THIS IS JUST A COPY !!!
-
-                        String filename = "txtfile1.txt";
-                        String folderName = "test";
-                        String folderId = getFolderId(folderName);
-                        if (folderId.equals("")) {
-                            Log.e(TAG, "The destination folder does not exist, abort: " + filename);
-                            return;
-                        } else {
-                            Log.i(TAG, "The destination folder is existing, start uploading to folderId: " + folderId);
-                        }
-
-                        File fileMetadata = new File();
-                        //fileMetadata.setName("photo.jpg");
-                        fileMetadata.setName(filename);
-                        fileMetadata.setParents(Collections.singletonList(folderId));
-                        // File's content.
-                        java.io.File filePath = new java.io.File(view.getContext().getFilesDir(), filename);
-                        if (filePath.exists()) {
-                            Log.i(TAG, "filePath " + filename + " is existing");
-                        } else {
-                            Log.e(TAG, "filePath " + filename + " is NOT existing");
-                            return;
-                        }
-                        // Specify media type and file-path for file.
-                        //FileContent mediaContent = new FileContent("image/jpeg", filePath);
-                        FileContent mediaContent = new FileContent("text/plain", filePath);
-                        try {
-                            File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
-                                    .setFields("id, parents")
-                                    .execute();
-                            System.out.println("File ID: " + file.getId());
-                            Log.i(TAG, "The file was saved with fileId: " + file.getId());
-                            Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
-                            //return file.getId();
-                        } catch (GoogleJsonResponseException e) {
-                            // TODO(developer) - handle error appropriately
-                            System.err.println("Unable to upload file: " + e.getDetails());
-                            //throw e;
-                            Log.e(TAG, "ERROR: " + e.getDetails());
-                        } catch (IOException e) {
-                            //throw new RuntimeException(e);
-                            Log.e(TAG, "IOException: " + e.getMessage());
-                        }
-
-                    }
-                };
-                DoBasicUploadSubfolder.start();
-            }
-        });
-
-        basicUploadFromInternalStorage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "Basic upload from internal storage");
-                if (!checkLoginStatus()) {
-                    Log.e(TAG, "please sign in before upload a file");
-                    return;
-                }
-                // https://developers.google.com/drive/api/guides/manage-uploads
-                Thread DoBasicUpload = new Thread() {
-                    public void run() {
-                        Log.i(TAG, "running Thread DoBasicUpload");
-                        //do something that return "Calling this from your main thread can lead to deadlock"
-                        // Upload file photo.jpg on drive.
-                        String filename = "txtfile1.txt";
-                        File fileMetadata = new File();
-                        //fileMetadata.setName("photo.jpg");
-                        fileMetadata.setName(filename);
-                        // File's content.
-                        java.io.File filePath = new java.io.File(view.getContext().getFilesDir(), filename);
-                        if (filePath.exists()) {
-                            Log.i(TAG, "filePath " + filename + " is existing");
-                        } else {
-                            Log.e(TAG, "filePath " + filename + " is NOT existing");
-                            return;
-                        }
-                        // Specify media type and file-path for file.
-                        //FileContent mediaContent = new FileContent("image/jpeg", filePath);
-                        FileContent mediaContent = new FileContent("text/plain", filePath);
-                        try {
-                            File file = googleDriveServiceOwn.files().create(fileMetadata, mediaContent)
-                                    .setFields("id")
-                                    .execute();
-                            System.out.println("File ID: " + file.getId());
-                            Log.i(TAG, "The file was saved with fileId: " + file.getId());
-                            Log.i(TAG, "The file has a size of: " + file.getSize() + " bytes");
-                            //return file.getId();
-                        } catch (GoogleJsonResponseException e) {
-                            // TODO(developer) - handle error appropriately
-                            System.err.println("Unable to upload file: " + e.getDetails());
-                            //throw e;
-                            Log.e(TAG, "ERROR: " + e.getDetails());
-                        } catch (IOException e) {
-                            //throw new RuntimeException(e);
-                            Log.e(TAG, "IOException: " + e.getMessage());
-                        }
-
-                    }
-                };
-                DoBasicUpload.start();
-            }
-        });
-
-        basicDownloadToInternalStorage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "Basic download to internal storage");
-                if (googleDriveServiceOwn == null) {
-                    Log.e(TAG, "please sign in before downloading a file");
-                    return;
-                }
-                // https://developers.google.com/drive/api/guides/manage-downloads
-                // https://gist.github.com/jesusnoseq/4362854
-                // https://stackoverflow.com/questions/58945797/google-drive-api-not-downloading-files-java-v3
-                // https://stackoverflow.com/questions/41184940/download-folder-with-google-drive-api
-
-                // first we need to list the files in the folder to get the fileId
-                // test11.txt fileId:1rnzjf6Qh7CX8DqOniNpt22rrnxhy-Eys
-                // Der Sturm auf die Batterie - Influencer als Lehrer.mp3 fileId:1EK8gUleGtKq9zm08x4gV6jycsapmnNhe
-
-                // todo make a file lister with onClick Lister
-
-                final String filename = "test11.txt";
-                final String fileId = "1rnzjf6Qh7CX8DqOniNpt22rrnxhy-Eys";
-                Thread DoBasicDownload = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.i(TAG, "running Thread DoBasicDownloadFile");
-
-                        java.io.File destFile = new java.io.File(view.getContext().getFilesDir(), filename);
-                        OutputStream outputstream = null;
-                        try {
-                            outputstream = new FileOutputStream(destFile);
-                            googleDriveServiceOwn.files().get(fileId)
-                                    .executeMediaAndDownloadTo(outputstream);
-                            outputstream.flush();
-                            outputstream.close();
-                            Log.i(TAG, "file download: " + filename);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(MainActivity.this, "file downloaded " + filename + " to Internal Storage", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        } catch (IOException e) {
-                            Log.e(TAG, "ERROR: " + e.getMessage());
-                            //throw new RuntimeException(e);
-                        }
-                    }
-                });
-                DoBasicDownload.start();
-            }
-        });
-
-        basicListFilesInFolder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "Basic list files in folder in Google Drive");
-                if (!checkLoginStatus()) {
-                    Log.e(TAG, "please sign in before list files");
-                    return;
-                }
-                // folder test: 1-c0_0R0tOomtfuHcpi3Y08PHQXRuMG15
-                //String folderId = "1-c0_0R0tOomtfuHcpi3Y08PHQXRuMG15";
-                String folderId = "root";
-
-                Thread DoBasicListFilesInFolder = new Thread() {
-                    public void run() {
-                        Log.i(TAG, "running Thread DoBasicListFilesInFolder");
-                        listFilesInGoogleFolder(folderId);
-
-                    }
-                };
-
-                DoBasicListFilesInFolder.start();
-            }
-        });
-
-        basicListFiles.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "Basic list files in Google Drive");
-                if (!checkLoginStatus()) {
-                    Log.e(TAG, "please sign in before list files");
-                    return;
-                }
-
-
-                // https://developers.google.com/drive/api/guides/search-files
-                Thread DoBasicListFiles = new Thread() {
-                    public void run() {
-                        Log.i(TAG, "running Thread DoBasicListFiles");
-                        List<File> files = new ArrayList<File>();
-                        String pageToken = null;
-                        do {
-                            FileList result = null;
-                            try {
-                                result = googleDriveServiceOwn.files().list()
-                                        .setQ("mimeType != 'application/vnd.google-apps.folder'") // list only files
-                                        .setSpaces("drive")
-                                        //.setFields("nextPageToken, files/*") // all fields
-                                        .setFields("files/name, nextPageToken, files/parents, files/id, files/size")
-                                        .setPageToken(pageToken)
-                                        .execute();
-                            } catch (IOException e) {
-                                //throw new RuntimeException(e);
-                                Log.e(TAG, "ERROR: " + e.getMessage());
-                            }
-                            // todo NPE error handling
-                            /*
-                            for (File file : result.getFiles()) {
-                                System.out.printf("Found file: %s (%s)\n",
-                                        file.getName(), file.getId());
-                            }
-                            
-                             */
-                            if (result != null) {
-                                files.addAll(result.getFiles());
-                            }
-
-                            pageToken = result != null ? result.getNextPageToken() : null;
-                            System.out.println("*** pageToken: " + pageToken);
-                        } while (pageToken != null);
-                        // files is containing all files
-                        //return files;
-                        Log.i(TAG, "files is containing files or folders: " + files.size());
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("Files found in GoogleDrive:\n\n");
-                        for (int i = 0; i < files.size(); i++) {
-
-                            // get parents
-                            File fileResult = files.get(i);
-                            List<String> fileParents = fileResult.getParents();
-                            String parentList = "";
-                            if (fileParents != null) {
-                                int parentListSize = fileParents.size();
-                                System.out.println("* there are parents: " + parentListSize);
-                                for (int j = 0; j < parentListSize; j++) {
-                                    parentList += fileParents.get(j) + " ";
-                                }
-                            }
-
-                            String content =
-                                    "name: " + files.get(i).getName() + " " +
-                                            " parents: " + parentList + " " +
-
-                                            " id: " + files.get(i).getId() + " " +
-                                            " size: " + files.get(i).getSize() + "\n";
-                            sb.append(content);
-                            sb.append("--------------------\n");
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                fileName.setText(sb.toString());
-                            }
-                        });
-
-                    }
-                };
-                DoBasicListFiles.start();
-            }
-        });
-
-        basicListFolder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "Basic list folder in Google Drive");
-                if (!checkLoginStatus()) {
-                    Log.e(TAG, "please sign in before list folder");
-                    return;
-                }
-                // https://developers.google.com/drive/api/guides/search-files
-                Thread DoBasicListFolder = new Thread() {
-                    public void run() {
-                        Log.i(TAG, "running Thread DoBasicListFolder");
-                        List<File> files = new ArrayList<File>();
-                        String pageToken = null;
-                        do {
-                            FileList result = null;
-                            try {
-                                result = googleDriveServiceOwn.files().list()
-                                        .setQ("mimeType = 'application/vnd.google-apps.folder'") // list only folders
-                                        .setSpaces("drive")
-                                        .setFields("nextPageToken, files(id, name, size)")
-                                        .setPageToken(pageToken)
-                                        .execute();
-                            } catch (IOException e) {
-                                //throw new RuntimeException(e);
-                                Log.e(TAG, "ERROR: " + e.getMessage());
-                            }
-                            // todo NPE error handling
-                            /*
-                            for (File file : result.getFiles()) {
-                                System.out.printf("Found file: %s (%s)\n",
-                                        file.getName(), file.getId());
-                            }
-
-                             */
-                            if (result != null) {
-                                files.addAll(result.getFiles());
-                            }
-
-                            pageToken = result != null ? result.getNextPageToken() : null;
-                        } while (pageToken != null);
-                        // files is containing all files
-                        //return files;
-                        Log.i(TAG, "files is containing files or folders: " + files.size());
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("Folders found in GoogleDrive:\n\n");
-                        for (int i = 0; i < files.size(); i++) {
-                            String content =
-                                    files.get(i).getName() + " " +
-                                            files.get(i).getId() + " " +
-                                            files.get(i).getSize() + "\n";
-                            sb.append(content);
-                            sb.append("--------------------\n");
-                        }
-                        System.out.println("** folder:\n" + sb.toString());
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                fileName.setText(sb.toString());
-                            }
-                        });
-
-                    }
-                };
-                DoBasicListFolder.start();
-            }
-        });
-
-        queryFiles.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "query files on Google Drive");
-
-                if (mDriveServiceHelper == null) {
-                    Log.e(TAG, "ERROR on Querying for files");
-                    return;
-                }
-
-                mDriveServiceHelper.queryFiles()
-                        .addOnSuccessListener(fileList -> {
-                            System.out.println("received filelist");
-                            System.out.println("list entries: " + fileList.getFiles().size());
-                            StringBuilder builder = new StringBuilder();
-                            for (File file : fileList.getFiles()) {
-                                //builder.append(file.getName()).append("\n");
-                                builder.append("fileName: " + file.getName() + " fileId:" + file.getId()).append("\n");
-                                System.out.println("fileName: " + file.getName()
-                                        + " fileId: " + file.getId()
-                                        + " fileSize: " + file.getSize());
-
-                            }
-                            String fileNames = builder.toString();
-                            System.out.println(fileNames);
-                            fileName.setText(fileNames);
-                            //mDocContentEditText.setText(fileNames);
-
-                            //etReadOnlyMode();
-                        })
-                        .addOnFailureListener(exception -> Log.e(TAG, "Unable to query files.", exception));
             }
         });
 

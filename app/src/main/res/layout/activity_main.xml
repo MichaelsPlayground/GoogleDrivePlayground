@@ -96,6 +96,13 @@
                 android:layout_height="wrap_content"
                 android:text="check storage permissions" />
 
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerThickness="4dp"
+                app:dividerInsetEnd="16dp"
+                app:dividerInsetStart="16dp" />
+
             <Button
                 android:id="@+id/btnMainSignIn"
                 android:layout_width="match_parent"
@@ -114,71 +121,18 @@
                 android:layout_height="wrap_content"
                 android:text="check sign status from Google Drive" />
 
-            <Button
-                android:id="@+id/btnMainUploadFile"
+            <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="upload internal storage file to Google Drive" />
-
-            <Button
-                android:id="@+id/btnMainBasicUploadFile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="basic upload internal storage file to Google Drive" />
-
-            <Button
-                android:id="@+id/btnMainBasicDownloadFile"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="basic download file from Google Drive to internal storage" />
+                app:dividerThickness="4dp"
+                app:dividerInsetEnd="16dp"
+                app:dividerInsetStart="16dp" />
 
             <Button
                 android:id="@+id/btnMainBasicCreateFolder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="basic create a folder in Google Drive" />
-
-            <Button
-                android:id="@+id/btnMainBasicUploadFileSubfolder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="basic upload internal storage file to Google Drive subfolder" />
-
-            <Button
-                android:id="@+id/btnMainBasicListFilesInFolder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="list files/folder" />
-
-            <Button
-                android:id="@+id/btnMainQueryFiles"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="query files" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnMainBasicListFiles"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="list files" />
-
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
-                <Button
-                    android:id="@+id/btnMainBasicListFolder"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="list folder" />
-
-            </LinearLayout>
 
             <Button
                 android:id="@+id/btnMainSelectLocalFolder"
@@ -193,10 +147,23 @@
                 android:text="select Google Drive folder" />
 
             <Button
+                android:id="@+id/btnMainSelectUnencryptedFolders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="select unencrypted content folders" />
+
+            <Button
                 android:id="@+id/btnMainSelectEncryptedFolders"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="select encrypted content folders" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerThickness="4dp"
+                app:dividerInsetEnd="16dp"
+                app:dividerInsetStart="16dp" />
 
             <Button
                 android:id="@+id/btnMainStartSimpleSyncLocalToGoogleDrive"

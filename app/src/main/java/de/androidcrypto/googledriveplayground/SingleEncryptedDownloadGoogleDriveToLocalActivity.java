@@ -115,20 +115,6 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
         // sign in to GoogleDrive
         requestSignIn();
 
-        /*
-        showUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isSyncChecked = true;
-                isLocalChecked = false;
-                isGoogleChecked = false;
-                startUpload.setEnabled(true);
-                listAllFolder();
-            }
-        });
-
-         */
-
         showLocal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -151,25 +137,6 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
             }
         });
 
-        /*
-        startUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(TAG, "start simple upload");
-
-                // todo run the upload process, check that uploadFileNames list is not empty :-)
-                if (uploadFileNames.size() < 1) {
-                    Log.i(TAG, "no files to sync, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "No files to sync", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(SimpleUploadLocalToGoogleDriveActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                //
-                // uploadSingleFileToGoogleDriveSubfolderNew(view);
-            }
-        });
-*/
     }
 
     public String getMimeType(Uri uri) {
@@ -481,13 +448,6 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
         String[] fileList;
         fileList = googleFileNames.toArray(new String[0]);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, fileList);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                //listFiles.setAdapter(adapter);
-                //fileName.setText(sb.toString());
-            }
-        });
 
     }
 
@@ -509,22 +469,8 @@ public class SingleEncryptedDownloadGoogleDriveToLocalActivity extends AppCompat
         String[] fileList;
         fileList = localFileNames.toArray(new String[0]);
         //System.out.println("fileList size: " + fileList.length);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, fileList);
-        //listFiles.setAdapter(adapter);
-        /*
-        listFiles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItem = (String) parent.getItemAtPosition(position);
-                System.out.println("The selected folder is : " + selectedItem);
-                Bundle bundle = new Bundle();
-                bundle.putString("selectedFile", selectedItem);
-                bundle.putString("selectedFolder", startDirectory);
-                startMainActivityIntent.putExtras(bundle);
-                startActivity(startMainActivityIntent);
-            }
-        });
-         */
+        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, fileList);
+
     }
 
 

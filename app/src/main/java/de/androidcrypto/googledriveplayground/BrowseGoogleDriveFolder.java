@@ -44,13 +44,12 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
 
     private Intent startListFolderActivityIntent;
 
-
     private static final int REQUEST_CODE_SIGN_IN = 1;
 
     private Drive googleDriveServiceOwn = null;
 
     private String returnToActivityFromIntent = "";
-    // could be SelectEncryptedFoldersActivity
+    // could be SelectEncryptedFoldersActivity or SelectUnencryptedFoldersActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +67,7 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
             returnToActivityFromIntent = (String) getIntent().getSerializableExtra("returnToActivity");
         }
 
+        Log.i(TAG, "onCreate");
         requestSignIn();
 
      }
@@ -218,8 +218,10 @@ public class BrowseGoogleDriveFolder extends AppCompatActivity implements Serial
                                 if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
                                     Log.i(TAG, "set returnToActivity to: " + returnToActivityFromIntent);
                                     bundle.putString("returnToActivity", returnToActivityFromIntent);
-                                }
-                                else {
+                                } else if (returnToActivityFromIntent.equals("SelectUnencryptedFoldersActivity")) {
+                                    Log.i(TAG, "set returnToActivity to: " + returnToActivityFromIntent);
+                                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                                } else {
                                     Log.i(TAG, "set returnToActivity to: " + "");
                                     bundle.putString("returnToActivity", "");
                                 }

@@ -21,6 +21,9 @@
         android:theme="@style/Theme.GoogleDrivePlayground"
         tools:targetApi="31">
         <activity
+            android:name=".SelectUnencryptedFoldersActivity"
+            android:exported="false" />
+        <activity
             android:name=".SelectEncryptedFoldersActivity"
             android:exported="false" />
         <activity

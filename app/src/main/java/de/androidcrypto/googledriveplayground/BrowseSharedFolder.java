@@ -27,7 +27,7 @@ public class BrowseSharedFolder extends AppCompatActivity implements Serializabl
 
     Intent startListFileActivityIntent;
     private String returnToActivityFromIntent = "";
-    // could be SelectEncryptedFoldersActivity
+    // could be SelectEncryptedFoldersActivity or SelectUnencryptedFoldersActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +45,7 @@ public class BrowseSharedFolder extends AppCompatActivity implements Serializabl
             returnToActivityFromIntent = (String) getIntent().getSerializableExtra("returnToActivity");
         }
 
+        Log.i(TAG, "onCreate");
         listFolder();
     }
 
@@ -73,8 +74,10 @@ public class BrowseSharedFolder extends AppCompatActivity implements Serializabl
                 if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
                     Log.i(TAG, "set returnToActivity to: " + returnToActivityFromIntent);
                     bundle.putString("returnToActivity", returnToActivityFromIntent);
-                }
-                else {
+                } else if (returnToActivityFromIntent.equals("SelectUnencryptedFoldersActivity")) {
+                    Log.i(TAG, "set returnToActivity to: " + returnToActivityFromIntent);
+                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                } else {
                     Log.i(TAG, "set returnToActivity to: " + "");
                     bundle.putString("returnToActivity", "");
                 }

@@ -33,6 +33,7 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
 
     Intent startMainActivityIntent, startListFolderActivityIntent;
     private String returnToActivityFromIntent = "";
+    // could be SelectEncryptedFoldersActivity or SelectUnencryptedFoldersActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,15 +90,22 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
                 bundle.putString("browsedFolder", selectedFolderForIntent);
                 bundle.putString("parentFolder", parentFolderForIntent);
                 if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
+                    Log.i(TAG, "IntentType: selectEncryptedSharedFolder");
                     bundle.putString("IntentType", "selectEncryptedSharedFolder");
                     bundle.putString("returnToActivity", returnToActivityFromIntent);
-                }
-                else {
+                } else if (returnToActivityFromIntent.equals("SelectUnencryptedFoldersActivity")) {
+                    Log.i(TAG, "IntentType: selectUnencryptedSharedFolder");
+                    bundle.putString("IntentType", "selectUnencryptedSharedFolder");
+                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                } else {
+                    Log.i(TAG, "IntentType: selectSharedFolder");
                     bundle.putString("IntentType", "selectSharedFolder");
                     bundle.putString("returnToActivity", "");
                 }
                 if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
                     startMainActivityIntent = new Intent(ListSharedFolder.this, SelectEncryptedFoldersActivity.class);
+                } else if (returnToActivityFromIntent.equals("SelectUnencryptedFoldersActivity")) {
+                    startMainActivityIntent = new Intent(ListSharedFolder.this, SelectUnencryptedFoldersActivity.class);
                 } else {
                     startMainActivityIntent = new Intent(ListSharedFolder.this, MainActivity.class);
                 }
@@ -107,7 +115,6 @@ public class ListSharedFolder extends AppCompatActivity implements Serializable 
                 finish();
             }
         });
-
     }
 
     private void listFolder(Context context, String startDirectory) {

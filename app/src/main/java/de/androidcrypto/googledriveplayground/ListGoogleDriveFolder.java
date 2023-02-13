@@ -49,6 +49,7 @@ public class ListGoogleDriveFolder extends AppCompatActivity implements Serializ
 
     private Intent startMainActivityIntent, startListFolderActivityIntent;
     private String returnToActivityFromIntent = "";
+    // could be SelectEncryptedFoldersActivity or SelectUnencryptedFoldersActivity
 
     private static final int REQUEST_CODE_SIGN_IN = 1;
 
@@ -111,14 +112,19 @@ public class ListGoogleDriveFolder extends AppCompatActivity implements Serializ
                     Log.i(TAG, "IntentType: selectEncryptedGoogleDriveFolder");
                     bundle.putString("IntentType", "selectEncryptedGoogleDriveFolder");
                     bundle.putString("returnToActivity", returnToActivityFromIntent);
-                }
-                else {
+                } else if (returnToActivityFromIntent.equals("SelectUnencryptedFoldersActivity")) {
+                    Log.i(TAG, "IntentType: selectUnencryptedGoogleDriveFolder");
+                    bundle.putString("IntentType", "selectUnencryptedGoogleDriveFolder");
+                    bundle.putString("returnToActivity", returnToActivityFromIntent);
+                } else {
                     Log.i(TAG, "IntentType: selectGoogleDriveFolder");
                     bundle.putString("IntentType", "selectGoogleDriveFolder");
                     bundle.putString("returnToActivity", "");
                 }
                 if (returnToActivityFromIntent.equals("SelectEncryptedFoldersActivity")) {
                     startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, SelectEncryptedFoldersActivity.class);
+                } else if (returnToActivityFromIntent.equals("SelectUnencryptedFoldersActivity")) {
+                    startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, SelectUnencryptedFoldersActivity.class);
                 } else {
                     startMainActivityIntent = new Intent(ListGoogleDriveFolder.this, MainActivity.class);
                 }
