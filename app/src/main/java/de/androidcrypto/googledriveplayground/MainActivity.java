@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     private View view;
 
-    private DriveServiceHelper mDriveServiceHelper;
+    //private DriveServiceHelper mDriveServiceHelper;
     //private static final int REQUEST_CODE_SIGN_IN = 1;
     //private static final int REQUEST_CODE_PERMISSION = 101;
     private static final int REQUEST_CODE_PERMISSION_BELOW_SDK30 = 102;
@@ -950,10 +950,7 @@ public class MainActivity extends AppCompatActivity {
                                     .setApplicationName("GoogleDrivePlayground")
                                     .build();
 
-                    // The DriveServiceHelper encapsulates all REST API and SAF functionality.
-                    // Its instantiation is required before handling any onClick actions.
-                    mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
-                    googleDriveServiceOwn = googleDriveService; // todo
+                    googleDriveServiceOwn = googleDriveService;
                 })
                 .addOnFailureListener(exception -> {
                     Log.e(TAG, "Unable to sign in.", exception);
