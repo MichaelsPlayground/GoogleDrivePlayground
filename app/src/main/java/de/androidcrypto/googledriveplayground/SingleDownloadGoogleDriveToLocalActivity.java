@@ -2,17 +2,13 @@ package de.androidcrypto.googledriveplayground;
 
 import static de.androidcrypto.googledriveplayground.ViewUtils.showSnackbarGreen;
 
-import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -27,17 +23,13 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.http.FileContent;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
@@ -55,18 +47,16 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
 
     private final String TAG = "SingleDownloadGDToLocal";
 
-    RadioButton showUpload, showLocal, showGoogle;
-    Button startUpload;
+    RadioButton showLocal, showGoogle;
+    Button returnToMainMenu;
     ProgressBar progressBar;
     TextView header, tvProgress, tvProgressAbsolute;
     private Handler handler = new Handler();
     ListView listFiles;
     // default values
-    boolean isSyncChecked = false;
     boolean isLocalChecked = false;
     boolean isGoogleChecked = true;
 
-    ArrayList<String> uploadFileNames = new ArrayList<>();
     ArrayList<String> localFileNames = new ArrayList<>();
     ArrayList<String> googleFileNames = new ArrayList<>();
     ArrayList<String> googleFileIds = new ArrayList<>();
@@ -83,18 +73,13 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
         setContentView(R.layout.activity_single_download_google_drive_to_local);
 
         header = findViewById(R.id.tvSingleDownloadToLocalHeader);
-        showUpload = findViewById(R.id.rbSimpleDownloadGoogleUpload);
-        showLocal = findViewById(R.id.rbSimpleDownloadGoogleLocal);
-        showGoogle = findViewById(R.id.rbSimpleDownloadGoogleGoogle);
-        startUpload = findViewById(R.id.btnSimpleUploadToGoogleUpload);
-        listFiles = findViewById(R.id.lvSimpleDownloadGoogle);
-        progressBar = findViewById(R.id.pbSimpleDownloadGoogle);
-        tvProgress = findViewById(R.id.tvSimpleDownloadGoogleProgress);
-        tvProgressAbsolute = findViewById(R.id.tvSimpleDownloadGoogleProgressAbsolute);
-
-        // todo rename id's from Simple to Single in xml
-        // todo rename button to Return to Main menu and function !
-        // todo remove RadioButton upload
+        showLocal = findViewById(R.id.rbSingleDownloadGoogleLocal);
+        showGoogle = findViewById(R.id.rbSingleDownloadGoogleGoogle);
+        returnToMainMenu = findViewById(R.id.btnSingleDownloadGoogleReturnToMainMenu);
+        listFiles = findViewById(R.id.lvSingleDownloadGoogle);
+        progressBar = findViewById(R.id.pbSingleDownloadGoogle);
+        tvProgress = findViewById(R.id.tvSingleDownloadGoogleProgress);
+        tvProgressAbsolute = findViewById(R.id.tvSingleDownloadGoogleProgressAbsolute);
 
         // init storageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -111,27 +96,11 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
         // sign in to GoogleDrive
         requestSignIn();
 
-        /*
-        showUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                isSyncChecked = true;
-                isLocalChecked = false;
-                isGoogleChecked = false;
-                startUpload.setEnabled(true);
-                listAllFolder();
-            }
-        });
-
-         */
-
         showLocal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isSyncChecked = false;
                 isLocalChecked = true;
                 isGoogleChecked = false;
-                startUpload.setEnabled(false);
                 listAllFolder();
             }
         });
@@ -139,49 +108,23 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
         showGoogle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isSyncChecked = false;
                 isLocalChecked = false;
                 isGoogleChecked = true;
-                startUpload.setEnabled(false);
                 listAllFolder();
             }
         });
 
-        /*
-        startUpload.setOnClickListener(new View.OnClickListener() {
+        returnToMainMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(TAG, "start simple upload");
-
-                // todo run the upload process, check that uploadFileNames list is not empty :-)
-                if (uploadFileNames.size() < 1) {
-                    Log.i(TAG, "no files to sync, aborted");
-                    Snackbar snackbar = Snackbar.make(view, "No files to sync", Snackbar.LENGTH_LONG);
-                    snackbar.setBackgroundTint(ContextCompat.getColor(SimpleUploadLocalToGoogleDriveActivity.this, R.color.red));
-                    snackbar.show();
-                    return;
-                }
-                //
-                // uploadSingleFileToGoogleDriveSubfolderNew(view);
+                Log.i(TAG, "return to main menu");
+                Intent intent = new Intent(SingleDownloadGoogleDriveToLocalActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
-*/
-    }
 
-    public String getMimeType(Uri uri) {
-        String mimeType = null;
-        if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-            ContentResolver cr = getApplicationContext().getContentResolver();
-            mimeType = cr.getType(uri);
-        } else {
-            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri
-                    .toString());
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    fileExtension.toLowerCase());
-        }
-        return mimeType;
     }
-
 
     /**
      * step 1: listAllFolders gets all files in the local and GoogleDrive folder ist an ArrayList
@@ -209,10 +152,8 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
             @Override
             public void run() {
                 listFiles.setAdapter(adapter);
-
-                // todo check that setItemOnClickListener is running ONLY when isLocalFolder is FALSE !
                 if (isLocalFolder) {
-                    // do nothing
+                    // do nothing because we want to download from Google Drive
                     listFiles.setOnItemClickListener(null);
                 } else {
                     listFiles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -236,7 +177,6 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
                 }
             }
         });
-
     }
 
     private void downloadSingleFileFromGoogleDriveSubfolderNew(View view, String fileNameForDownload, String fileIdForDownload) {
@@ -292,7 +232,6 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
                 });
                 showSnackbarGreen(view, "The file was downloaded");
             }
-
         };
         DoBasicDownloadSubfolder.start();
     }
@@ -304,24 +243,12 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
             public void run() {
                 Log.i(TAG, "running Thread DoBasicListFilesInFolder");
                 listFilesInGoogleFolder(googleDriveFolderId);
-                uploadFileNames = new ArrayList<>();
-                System.out.println("* uploadFileNames old size: " + uploadFileNames.size());
+                //uploadFileNames = new ArrayList<>();
+                //System.out.println("* uploadFileNames old size: " + uploadFileNames.size());
                 System.out.println("* localFileNames size: " + localFileNames.size());
                 System.out.println("* GoogleFileNames size: " + googleFileNames.size());
-                // find files from local in GoogleDrive list
-                for (int i = 0; i < localFileNames.size(); i++) {
-                    int index = googleFileNames.indexOf(localFileNames.get(i));
-                    // if index = -1 the localFileName is NOT in the googleDriveFileNames list
-                    if (index < 0) {
-                        // add the entry to the syncs list
-                        uploadFileNames.add(localFileNames.get(i));
-                    }
-                }
-                //System.out.println("* syncFileNames new size: " + syncFileNames.size());
                 // show data depending on radioGroup
-                if (isSyncChecked) {
-                    showFiles(uploadFileNames, false);
-                }
+
                 if (isLocalChecked) {
                     showFiles(localFileNames, true);
                 }
@@ -427,25 +354,6 @@ public class SingleDownloadGoogleDriveToLocalActivity extends AppCompatActivity 
                 localFileNames.add(files[i].getName());
             }
         }
-        String[] fileList;
-        fileList = localFileNames.toArray(new String[0]);
-        //System.out.println("fileList size: " + fileList.length);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, fileList);
-        //listFiles.setAdapter(adapter);
-        /*
-        listFiles.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItem = (String) parent.getItemAtPosition(position);
-                System.out.println("The selected folder is : " + selectedItem);
-                Bundle bundle = new Bundle();
-                bundle.putString("selectedFile", selectedItem);
-                bundle.putString("selectedFolder", startDirectory);
-                startMainActivityIntent.putExtras(bundle);
-                startActivity(startMainActivityIntent);
-            }
-        });
-         */
     }
 
 
