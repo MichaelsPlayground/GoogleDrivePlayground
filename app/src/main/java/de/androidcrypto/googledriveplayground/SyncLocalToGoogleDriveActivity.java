@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -80,6 +81,11 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
 
     private String syncType = "";
     // bundle.putString("SyncType", "encryptedSync");
+
+    // for incoming intent bundle.putString("LocalFolderOnDemandUri",
+    // "content://com.android.externalstorage.documents/tree/primary%3ADCIM");
+    private String localFolderOnDemandUri = "";
+
     private final int MINIMUM_PASSPHRASE_LENGTH = 4;
 
     @Override
@@ -107,6 +113,16 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
             //System.out.println("extras not null");
             syncType = (String) getIntent().getSerializableExtra("SyncType");
             Log.i(TAG, "incoming intent bundle: SyncType: " + syncType);
+
+            // check for a local folder (chosen by direcotry folder chooser) instead of
+            // the stored one
+            localFolderOnDemandUri = (String) getIntent().getSerializableExtra("LocalFolderOnDemandUri");
+            if (localFolderOnDemandUri == null) {
+                System.out.println("localFolderOnDemandUri is NULL");
+                localFolderOnDemandUri = "";
+            } else {
+                Log.i(TAG, "incoming intent bundle: LocalFolderOnDemandUri: " + localFolderOnDemandUri);
+            }
         }
 
         // init storageUtils
@@ -126,11 +142,25 @@ public class SyncLocalToGoogleDriveActivity extends AppCompatActivity {
             passphraseInputLayout.setVisibility(View.VISIBLE);
         } else {
             Log.i(TAG, "using unencryptedFolder credentials");
-            localFolderName = storageUtils.getLocalStorageName();
-            localFolderPath = storageUtils.getLocalStoragePath();
+            // check if we use the previously stored local folder of we have selected a folder on demand
+            if (TextUtils.isEmpty(localFolderOnDemandUri)) {
+                localFolderName = storageUtils.getLocalStorageName();
+                localFolderPath = storageUtils.getLocalStoragePath();
+            } else {
+                Log.i(TAG, "use the localFolderOnDemandUri: " + localFolderOnDemandUri);
+                localFolderName = localFolderOnDemandUri;
+                // todo get path from URI
+                Uri uri = Uri.parse(localFolderOnDemandUri);
+                File file = new File(uri.getPath());//create path from uri
+                final String[] split = file.getPath().split(":");//split the path.
+                String filePath = split[1];//assign it to a string(your choice).
+                System.out.println("filePath: " + filePath);
+                localFolderPath = filePath;
+                //localFolderPath = ??
+            }
             googleDriveFolderName = storageUtils.getGoogleDriveStorageName();
             googleDriveFolderId = storageUtils.getGoogleDriveStorageId();
-            String headerString = "Encrypted synchronization from a local folder (" +
+            String headerString = "Unencrypted synchronization from a local folder (" +
                     localFolderName + ") to a Google Drive folder (" +
                     googleDriveFolderName + ")";
             header.setText(headerString);

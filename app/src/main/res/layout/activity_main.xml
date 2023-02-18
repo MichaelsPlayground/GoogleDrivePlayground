@@ -226,6 +226,26 @@
                 android:layout_height="wrap_content"
                 android:text="download encrypted Google Drive to local" />
 
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerThickness="4dp"
+                app:dividerInsetEnd="16dp"
+                app:dividerInsetStart="16dp" />
+
+            <Button
+                android:id="@+id/btnMainSelectLocalFolderToGoogleDrive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="select a Local folder and upload to Google Drive" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:dividerThickness="4dp"
+                app:dividerInsetEnd="16dp"
+                app:dividerInsetStart="16dp" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/etMainFilenameLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

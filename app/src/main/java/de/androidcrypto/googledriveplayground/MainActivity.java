@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
     Button deleteGoogleDriveFile;
 
+    Button selectLocalFolderForUploadToGoogleDrive;
+
     com.google.android.material.textfield.TextInputEditText fileName;
 
     String selectedFolderFromIntent, parentFolderFromIntent;
@@ -130,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
         syncEncryptedGoogleDriveToLocal = findViewById(R.id.btnMainStartEncryptedSyncGoogleDriveToLocal);
         uploadEncryptedLocalToGoogleDrive = findViewById(R.id.btnMainStartSingleEncryptedUploadLocalToGoogleDrive);
         downloadEncryptedGoogleDriveToLocal = findViewById(R.id.btnMainStartSingleEncryptedDownloadGoogleDriveToLocal);
+        selectLocalFolderForUploadToGoogleDrive = findViewById(R.id.btnMainSelectLocalFolderToGoogleDrive);
 
         // init the StorageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -180,6 +183,30 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
+
+        selectLocalFolderForUploadToGoogleDrive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "selectLocalFolderForUploadToGoogleDrive");
+                // as we are selecting the source = local folder dynamically  we do not need to check
+                // if a local folder was stored
+                if (!checkForStoredFolderGoogleDrive()) {
+                // checkForStoredFolderGoogleDrive
+                //if (!checkForStoredFolders()) {
+                    Log.i(TAG, "Google Drive folder not stored yet, aborted");
+                    return;
+                }
+
+                // todo check internet connection state
+
+                directoryPickerRequestInformation();
+                //directoryPickerRequest.launch(null);
+                // or optionally pass an initial path as uri string
+                //dirRequest.launch("content://some_path");
+
+            }
+        });
+
 
         syncLocalToGoogleDrive.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -590,6 +617,71 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    /**
+     * section for Select a local folder for upload to Google Drive
+     * It will launch a system/device folder chooser and upload the content (without encryption)
+     * to the previously selected Google Drive Folder for unencrypted content without any
+     * further question
+     */
+
+    private void directoryPickerRequestInformation() {
+        // https://stackoverflow.com/a/2478662/8166854
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        Log.i(TAG, "directoryPickerRequestInformation - proceed");
+                        directoryPickerRequest.launch(null);
+                        //Yes button clicked
+                        //Toast.makeText(MainActivity.this, "selected folder stored", Toast.LENGTH_SHORT).show();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        Log.i(TAG, "directoryPickerRequestInformation - denied");
+                        Toast.makeText(MainActivity.this, "you denied to proceed", Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
+        final String informationString = "After confirming a folder selector appears and you select a folder. "
+                + "\nAfter that step the selected folder will be uploaded to the (previously) selected [unencrypted] Google Drive folder:\n"
+                + storageUtils.getGoogleDriveStorageName() +
+                "\n\nDo you want to proceed ?";
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(informationString).setPositiveButton(android.R.string.yes, dialogClickListener)
+                .setNegativeButton(android.R.string.no, dialogClickListener).show();
+        /*
+        If you want to use the "yes" "no" literals of the user's language you can use this
+        .setPositiveButton(android.R.string.yes, dialogClickListener)
+        .setNegativeButton(android.R.string.no, dialogClickListener)
+         */
+    }
+
+    private final ActivityResultLauncher<Uri> directoryPickerRequest = registerForActivityResult(
+            new ActivityResultContracts.OpenDocumentTree(),
+            uri -> {
+                if (uri != null) {
+                    // call this to persist permission across decice reboots
+                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    Log.i(TAG, "ActivityResultLauncher<Uri> directoryPickerRequest, URI: " + uri);
+                    // do your stuff
+                    Intent intent = new Intent(MainActivity.this, SyncLocalToGoogleDriveActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("SyncType", "unencryptedSync");
+                    bundle.putString("LocalFolderOnDemandUri", uri.toString());
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+                } else {
+                    // request denied by user
+                    Log.i(TAG, "ActivityResultLauncher<Uri> directoryPickerRequest DENIED by user");
+                }
+            }
+    );
+
+
 
     /**
      * this method checks that local and Google Drive folders are stored
