@@ -25,15 +25,19 @@ is stored using shared preferences.
 - select encrypted content folders: this activity stores the selected local and Google Drive folders 
 used for an **encrypted** file transfer. The data is stored using shared preferences.
 - sync local to Google Drive: the activity compares the content of the preselected local folder with 
-the Google Drive folder and uploads the "missing" files to Google Drive. Note: this is not a full 
-synchronization functionality - it compares only file names and not timestamps, file lengths or contents of 
+the Google Drive folder and uploads the "missing" files to Google Drive. Note: **this is not a full 
+synchronization functionality** - it compares only file names and not timestamps, file lengths or contents of 
 files in local and Google Drive folder ! 
 - sync Google Drive to local: the activity compares the content of the preselected local folder with 
-the Google Drive folder and downloads the "missing" files from Google Drive. Note: this is not a full 
-synchronization functionality - it compares only file names and not timestamps, file lengths or contents of 
+the Google Drive folder and downloads the "missing" files from Google Drive. Note: **this is not a full 
+synchronization functionality** - it compares only file names and not timestamps, file lengths or contents of 
 files in local and Google Drive folder !
-
-
+- upload local to Google Drive: the activity shows the content of the preselected local folder and uploads 
+the selected file to the Google Drive folder. If the file name is existing on Google Drive the file gets 
+deleted on Google Drive before upload the selected file. 
+- download Google Drive to local: the activity shows the content of the preselected Google Drive folder and 
+the selected file to the local folder. If the file name is existing in the local folder the existing file is 
+overwritten.
 
 
 
