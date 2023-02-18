@@ -5,7 +5,41 @@ This is an experimental app that shows how to work with Google Drive Rest API 3
 Function/Views:
 
 - View: "user is signed in" : red = not signed in, green = signed in
-- View: "storage permissions granted": red = permissions not granted, green = permissions granted
+- View: "storage permissions granted": red = permissions not granted, green = permissions granted ( 
+status is checked in "check storage permissions")
+- grant storage permissions: the app needs the "MANAGE_EXTERNAL_STORAGE" permission that gives full 
+access to all files (except the app-data "internal storage" files) on Android 11+. The permission needs 
+to be given by the user using switch
+- check storage permissions: checks if the permission was granted, if yes it changes the indicator to green
+- sign in to Google Drive: to run any operation in a Google Drive account you need to sign in. If an 
+account was used before you check in immediately.
+- sign out from Google Drive: check out of Google Drive (the account used last)
+- check sign status from from Google Drive: if a user is signed in the indicator gets grren, otherwise red
+- basic create a folder in Google Drive: creates a hard-coded folder in the Google Drive account
+- select local folder: for some operations you need to preselect a folder on your local device. The data 
+is stored using shared preferences.
+- select Google Drive folder: for some operations you need to preselect a folder on your Google Drive. The data 
+is stored using shared preferences.
+- select unencrypted content folders: this activity combines the activities "select local folder" and 
+"select Google Drive folder". The data is stored using shared preferences.
+- select encrypted content folders: this activity stores the selected local and Google Drive folders 
+used for an **encrypted** file transfer. The data is stored using shared preferences.
+- sync local to Google Drive: the activity compares the content of the preselected local folder with 
+the Google Drive folder and uploads the "missing" files to Google Drive. Note: this is not a full 
+synchronization functionality - it compares only file names and not timestamps, file lengths or contents of 
+files in local and Google Drive folder ! 
+- sync Google Drive to local: the activity compares the content of the preselected local folder with 
+the Google Drive folder and downloads the "missing" files from Google Drive. Note: this is not a full 
+synchronization functionality - it compares only file names and not timestamps, file lengths or contents of 
+files in local and Google Drive folder !
+
+
+
+
+
+
+
+
 
 
 
