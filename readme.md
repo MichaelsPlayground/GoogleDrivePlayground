@@ -82,12 +82,7 @@ build.gradle (app):
     implementation('com.google.api-client:google-api-client-android:1.26.0')
     implementation('com.google.apis:google-api-services-drive:v3-rev136-1.25.0')
     implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
-    
-    // for subproject prateekbangre - GoogleDrive_demo
-    // for runtime permission
-    implementation 'com.karumi:dexter:6.2.1'
-    //for top side toast, text with animation
-    implementation 'net.steamcrafted:load-toast:1.0.12'    
+     
 ````
 
 AndroidManifest.xml:

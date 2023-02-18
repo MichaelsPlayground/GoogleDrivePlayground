@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button deleteGoogleDriveFile;
 
-    Button selectLocalFolderForUploadToGoogleDrive;
+    Button selectLocalFolderForSyncToGoogleDrive;
 
     com.google.android.material.textfield.TextInputEditText fileName;
 
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         syncEncryptedGoogleDriveToLocal = findViewById(R.id.btnMainStartEncryptedSyncGoogleDriveToLocal);
         uploadEncryptedLocalToGoogleDrive = findViewById(R.id.btnMainStartSingleEncryptedUploadLocalToGoogleDrive);
         downloadEncryptedGoogleDriveToLocal = findViewById(R.id.btnMainStartSingleEncryptedDownloadGoogleDriveToLocal);
-        selectLocalFolderForUploadToGoogleDrive = findViewById(R.id.btnMainSelectLocalFolderToGoogleDrive);
+        selectLocalFolderForSyncToGoogleDrive = findViewById(R.id.btnMainSelectLocalFolderSyncToGoogleDrive);
 
         // init the StorageUtils
         storageUtils = new StorageUtils(getApplicationContext());
@@ -184,10 +184,10 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        selectLocalFolderForUploadToGoogleDrive.setOnClickListener(new View.OnClickListener() {
+        selectLocalFolderForSyncToGoogleDrive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(TAG, "selectLocalFolderForUploadToGoogleDrive");
+                Log.i(TAG, "selectLocalFolderForSyncToGoogleDrive");
                 // as we are selecting the source = local folder dynamically  we do not need to check
                 // if a local folder was stored
                 if (!checkForStoredFolderGoogleDrive()) {
@@ -664,7 +664,7 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.OpenDocumentTree(),
             uri -> {
                 if (uri != null) {
-                    // call this to persist permission across decice reboots
+                    // call this to persist permission across device reboots
                     getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     Log.i(TAG, "ActivityResultLauncher<Uri> directoryPickerRequest, URI: " + uri);
                     // do your stuff
@@ -680,8 +680,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
     );
-
-
 
     /**
      * this method checks that local and Google Drive folders are stored

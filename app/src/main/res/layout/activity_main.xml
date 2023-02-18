@@ -234,10 +234,10 @@
                 app:dividerInsetStart="16dp" />
 
             <Button
-                android:id="@+id/btnMainSelectLocalFolderToGoogleDrive"
+                android:id="@+id/btnMainSelectLocalFolderSyncToGoogleDrive"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="select a Local folder and upload to Google Drive" />
+                android:text="select a Local folder and sync to Google Drive" />
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"

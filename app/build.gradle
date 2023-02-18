@@ -37,8 +37,8 @@ android {
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.6.0'
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
@@ -46,7 +46,7 @@ dependencies {
 
     // google drive libs
     //implementation 'com.google.android.gms:play-services-auth:17.0.0'
-    implementation 'com.google.android.gms:play-services-auth:20.3.0'
+    implementation 'com.google.android.gms:play-services-auth:20.4.1'
     //implementation 'com.google.http-client:google-http-client-gson:1.26.0'
     implementation 'com.google.http-client:google-http-client-gson:1.42.2'
 
@@ -62,21 +62,4 @@ dependencies {
     implementation 'com.google.oauth-client:google-oauth-client-jetty:1.34.1'
     implementation 'com.google.apis:google-api-services-drive:v3-rev20220815-2.0.0' 
 
-    // for subproject prateekbangre - GoogleDrive_demo
-    // for runtime permission
-    implementation 'com.karumi:dexter:6.2.1'
-    //for top side toast, text with animation
-    //implementation 'net.steamcrafted:load-toast:1.0.12'
-    // https://mvnrepository.com/artifact/net.steamcrafted/load-toast
-    implementation group: 'net.steamcrafted', name: 'load-toast', version: '1.0.12'
-
-    // for subproject prof18 - Database-Backup-Restore
-    implementation 'com.google.android.gms:play-services-drive:17.0.0'
-
-    // Just add it when you need to debug your file on Google Drive
-    // You can remove it when your app go live
-    //implementation 'com.github.ammarptn:GDriveDebugViewer:0.1.2'
-
-    // CircleImageView
-    implementation 'de.hdodenhof:circleimageview:3.1.0'
 }
