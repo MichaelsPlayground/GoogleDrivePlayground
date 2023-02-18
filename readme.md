@@ -2,7 +2,7 @@
 
 This is an experimental app that shows how to work with Google Drive Rest API 3
 
-Function/Views:
+# Functions and Views:
 
 - View: "user is signed in" : red = not signed in, green = signed in
 - View: "storage permissions granted": red = permissions not granted, green = permissions granted ( 
@@ -34,16 +34,28 @@ synchronization functionality** - it compares only file names and not timestamps
 files in local and Google Drive folder !
 - upload local to Google Drive: the activity shows the content of the preselected local folder and uploads 
 the selected file to the Google Drive folder. If the file name is existing on Google Drive the file gets 
-deleted on Google Drive before upload the selected file. 
+deleted on Google Drive before uploading the selected file. 
 - download Google Drive to local: the activity shows the content of the preselected Google Drive folder and 
 the selected file to the local folder. If the file name is existing in the local folder the existing file is 
 overwritten.
+- delete a Google Drive file: the activity shows the content of the preselected Google Drive folder and deletes 
+the selected file on Google Drive. Note: you need to **long-press the entry** to avoid an unwanted deletion.
+- section encrypted sync and up-/download: the four activities "sync encrypted local to Google Drive", 
+"sync encrypted Google Drive to local", "upload encrypted local to Google Drive" and "download encrypted Google Drive to local" 
+are working similar to the "unencrypted" activities described above. To start the transfer you need to provide 
+a passphrase (minimum 4 characters length). For encryption details see below "encryption algorithm details".
+**Note: there is NO WAY to recover an encrypted file without knowledge of the passphrase !**.
+- select a local folder and upload to Google Drive: this activity allows the "on demand" selection of a 
+local folder. The upload is perfomred in the "upload local to Google Drive" activity. 
 
+# Encryption algorithm details
+The app uses the **AES algorithm** and the **GCM mode** for the file encryption. The encryption key is derived  
+using the **PBKDF2 algorithm** that uses **10000 iterations** and the **PBKDF2WithHmacSHA256 hashing** to generate 
+a 32 bytes (256 bits) long encryption key using a **random salt** and **random nonce**. Both salt and nonce are 
+prepended to the ciphertext in the encrypted file.
 
-
-
-
-
+**Serious warning: there is NO WAY to decrypt or recover an encrypted file when you forget the passphrase used 
+on encryption !**
 
 
 
