@@ -4,8 +4,8 @@ This is an experimental app that shows how to work with Google Drive Rest API 3
 
 Function/Views:
 
--View: "user is signed in" : red = not signed in, green = signed in
--View: "storage permissions granted": red = permissions not granted, green = permissions granted
+- View: "user is signed in" : red = not signed in, green = signed in
+- View: "storage permissions granted": red = permissions not granted, green = permissions granted
 
 
 
